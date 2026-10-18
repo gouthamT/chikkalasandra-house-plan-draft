@@ -194,13 +194,13 @@ F('sofa', 1, 'Sofa 1.6 m (backed against the stair railing)', 6.35, 7.95, 3.8, 4
 F('ctab', 1, 'Coffee table', 6.65, 7.65, 2.4, 2.95, 0.4, 'walnut')
 F('frames', 1, 'Family-memory wall (on the stairwell wall)', 4.2, 6.6, 4.715, 4.751, 1.0, 'black', y=1.2, shape='frames', solid=False)
 # kitchen (east / south-east)
-F('run', 1, 'Cooking run on the east wall (cook faces east), second sink at its north end', 10.66, E1, 2.25, 5.1, 0.9, 'walnut', shape='counterE', hob=[3.95, 4.55], sink=[2.4, 3.0])
+F('run', 1, 'Cooking run on the east wall (cook faces east)', 10.66, E1, 2.25, 5.1, 0.9, 'walnut', shape='counterE', hob=[3.95, 4.55])
 F('hood', 1, 'Chimney hood ducted out through the east wall', 10.76, E1, 3.95, 4.55, 0.55, 'steel', y=1.6, solid=False)
 F('overE', 1, 'Overhead cabinets', 10.91, E1, 3.6, 5.1, 0.75, 'white', y=2.15, solid=False, shape='overheadE')
 F('loftE', 1, 'Loft storage over the window', 10.76, E1, 2.145, 3.5, 0.7, 'white', y=2.2, solid=False)
 F('pantry', 1, 'Tall pull-out pantry', 9.55, 10.5, 5.266, S1, 2.2, 'white', shape='tall')
 F('fridge', 1, 'Refrigerator (double door)', 10.56, E1, 5.166, S1, 1.85, 'steel')
-F('island', 1, 'Slim prep island, parallel to the counter: 1.60 × 0.60 m', 9.0, 9.6, 2.3, 3.9, 0.9, 'quartz', shape='islandZ', sink=False, over=0)
+F('island', 1, 'Slim island with the kitchen sink, parallel to the counter: 1.60 × 0.60 m', 9.0, 9.6, 2.3, 3.9, 0.9, 'quartz', shape='islandZ', over=0)
 F('sofa2', 1, 'Sofa 1.4 m backed onto the island', 8.05, 8.95, 1.75, 3.15, 0.8, 'linen', shape='sofa', back='x2')
 F('pooja', 1, 'Open mandir unit (idols facing west)', 10.76, E1, 1.0, 2.0, 1.0, 'walnut', shape='pooja')
 
@@ -287,8 +287,8 @@ R('living', 1, 'Living room', 5.715, 8.0, N1, 4.751, [5.95, 2.2, Y[1]], [
 R('landing1', 1, 'First-floor stair landing', 8.55, FOOT_E, LANE[0], S1, [9.05, 5.35, Y[1]], ['The next flight up starts here, at the back of the kitchen.'], 'Landing')
 R('kitchen', 1, 'Kitchen', 8.0, E1, N1, S1, [9.9, 3.9, Y[1]], [
   'The kitchen is now about 2.5 times bigger and sits in the south-east (Agni corner), the Vastu-preferred spot. The hob is on the east wall, so the cook faces east.',
-  'The island runs parallel to the counter: a slim 1.60 × 0.60 m prep island with drawers and no sink. A sofa backs onto its living-room side. The aisle to the counter is 1.06 m.',
-  'The kitchen sink is at the north end of the counter, under the window, away from the hob. Water on the north-east side also suits Vastu.',
+  'The island runs parallel to the counter: a slim 1.60 × 0.60 m island holding the kitchen sink, with the tap on the kitchen side. A sofa backs onto its living-room side. The aisle to the counter is 1.06 m, so the sink-to-hob triangle is a single step.',
+  'The counter is now sink-free: one long run for prep and cooking. The window at its north end stays clear for light and fumes.',
   'For fumes, the chimney ducts straight out through the east wall, and a 1.2 m window beside it opens for cross-ventilation with the north window.',
   'Storage: overheads and a loft on the east wall, a tall pull-out pantry and the fridge on the south wall, and island cupboards. The north wall is now left open, with just the window.'])
 

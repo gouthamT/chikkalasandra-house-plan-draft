@@ -2046,7 +2046,7 @@
   {
    "id": "run",
    "lv": 1,
-   "name": "Cooking run on the east wall (cook faces east), second sink at its north end",
+   "name": "Cooking run on the east wall (cook faces east)",
    "x1": 10.66,
    "x2": 11.26,
    "z1": 2.25,
@@ -2058,10 +2058,6 @@
    "hob": [
     3.95,
     4.55
-   ],
-   "sink": [
-    2.4,
-    3.0
    ]
   },
   {
@@ -2132,7 +2128,7 @@
   {
    "id": "island",
    "lv": 1,
-   "name": "Slim prep island, parallel to the counter: 1.60 \u00d7 0.60 m",
+   "name": "Slim island with the kitchen sink, parallel to the counter: 1.60 \u00d7 0.60 m",
    "x1": 9.0,
    "x2": 9.6,
    "z1": 2.3,
@@ -2141,7 +2137,6 @@
    "h": 0.9,
    "mat": "quartz",
    "shape": "islandZ",
-   "sink": false,
    "over": 0
   },
   {
@@ -3215,8 +3210,8 @@
    ],
    "notes": [
     "The kitchen is now about 2.5 times bigger and sits in the south-east (Agni corner), the Vastu-preferred spot. The hob is on the east wall, so the cook faces east.",
-    "The island runs parallel to the counter: a slim 1.60 \u00d7 0.60 m prep island with drawers and no sink. A sofa backs onto its living-room side. The aisle to the counter is 1.06 m.",
-    "The kitchen sink is at the north end of the counter, under the window, away from the hob. Water on the north-east side also suits Vastu.",
+    "The island runs parallel to the counter: a slim 1.60 \u00d7 0.60 m island holding the kitchen sink, with the tap on the kitchen side. A sofa backs onto its living-room side. The aisle to the counter is 1.06 m, so the sink-to-hob triangle is a single step.",
+    "The counter is now sink-free: one long run for prep and cooking. The window at its north end stays clear for light and fumes.",
     "For fumes, the chimney ducts straight out through the east wall, and a 1.2 m window beside it opens for cross-ventilation with the north window.",
     "Storage: overheads and a loft on the east wall, a tall pull-out pantry and the fridge on the south wall, and island cupboards. The north wall is now left open, with just the window."
    ]
