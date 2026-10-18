@@ -36,3 +36,4 @@ node tools/verify.js             # walk test
 ```
 
 Coordinates: x runs west → east from the road boundary, z runs north → south from the north boundary, y is height.
+# chikkalasandra-house-plan-draft
