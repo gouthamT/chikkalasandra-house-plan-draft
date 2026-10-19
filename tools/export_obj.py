@@ -7,17 +7,17 @@ P = json.load(open(sys.argv[1] if len(sys.argv) > 1 else 'plan.json'))
 OUT = sys.argv[2] if len(sys.argv) > 2 else 'chikkalasandra_house'
 
 MATS = {  # name: (rgb 0-1, opacity, roughness-ish Ns)
-    'render': ((0.93, 0.925, 0.90), 1, 10), 'wall_interior': ((0.95, 0.937, 0.91), 1, 10), 'slab': ((0.91, 0.90, 0.875), 1, 10),
-    'glass': ((0.74, 0.82, 0.83), 0.3, 200), 'walnut': ((0.43, 0.27, 0.16), 1, 60), 'white_lacquer': ((0.95, 0.945, 0.935), 1, 120),
-    'quartz': ((0.957, 0.953, 0.94), 1, 160), 'sage': ((0.62, 0.69, 0.60), 1, 40), 'linen': ((0.91, 0.88, 0.83), 1, 5),
+    'render': ((0.953, 0.922, 0.867), 1, 10), 'wall_interior': ((0.953, 0.922, 0.867), 1, 10), 'slab': ((0.969, 0.957, 0.925), 1, 10),
+    'glass': ((0.74, 0.82, 0.83), 0.3, 200), 'walnut': ((0.545, 0.369, 0.204), 1, 60), 'white_lacquer': ((0.867, 0.898, 0.714), 1, 60),
+    'quartz': ((0.788, 0.682, 0.518), 1, 100), 'sage': ((0.867, 0.898, 0.714), 1, 40), 'linen': ((0.902, 0.863, 0.784), 1, 5),
     'cane': ((0.78, 0.64, 0.42), 1, 20), 'black_steel': ((0.13, 0.13, 0.12), 1, 90), 'steel': ((0.72, 0.725, 0.705), 1, 150),
     'ceramic': ((0.965, 0.96, 0.945), 1, 200), 'terracotta': ((0.71, 0.35, 0.23), 1, 10), 'stone': ((0.78, 0.75, 0.69), 1, 30),
-    'stair_tread': ((0.82, 0.80, 0.75), 1, 40), 'car_paint': ((0.42, 0.50, 0.55), 1, 150), 'planting': ((0.38, 0.50, 0.27), 1, 5),
-    'solar': ((0.11, 0.16, 0.23), 1, 150), 'floor_stone': ((0.80, 0.78, 0.73), 1, 60), 'floor_oxide': ((0.66, 0.75, 0.59), 1, 80),
+    'stair_tread': ((0.910, 0.878, 0.816), 1, 40), 'car_paint': ((0.42, 0.50, 0.55), 1, 150), 'planting': ((0.38, 0.50, 0.27), 1, 5),
+    'solar': ((0.11, 0.16, 0.23), 1, 150), 'floor_stone': ((0.910, 0.878, 0.816), 1, 60), 'floor_oxide': ((0.890, 0.827, 0.627), 1, 80),
     'floor_terracotta': ((0.72, 0.39, 0.25), 1, 15), 'floor_wet': ((0.83, 0.83, 0.80), 1, 40), 'floor_wet_dark': ((0.66, 0.67, 0.64), 1, 40),
     'floor_checker': ((0.55, 0.55, 0.53), 1, 80), 'floor_concrete': ((0.65, 0.64, 0.61), 1, 10), 'lawn': ((0.44, 0.56, 0.28), 1, 5),
     'rug': ((0.85, 0.81, 0.74), 1, 2), 'ground_grass': ((0.56, 0.60, 0.45), 1, 2), 'asphalt': ((0.33, 0.34, 0.35), 1, 5),
-    'neighbour': ((0.85, 0.835, 0.80), 1, 5), 'gate_timber': ((0.43, 0.27, 0.16), 1, 40), 'tree_trunk': ((0.43, 0.35, 0.28), 1, 5),
+    'neighbour': ((0.85, 0.835, 0.80), 1, 5), 'gate_timber': ((0.545, 0.369, 0.204), 1, 40), 'tree_trunk': ((0.43, 0.35, 0.28), 1, 5),
 }
 FURN_MAT = {'render': 'render', 'walnut': 'walnut', 'white': 'white_lacquer', 'quartz': 'quartz', 'sage': 'sage', 'linen': 'linen',
             'cane': 'cane', 'black': 'black_steel', 'steel': 'steel', 'ceramic': 'ceramic', 'terracotta': 'terracotta', 'glass': 'glass',
@@ -175,6 +175,15 @@ for bl in st.get('balusters', []):
     while x < bl['x2'] - 0.005: box(x - 0.009, x + 0.009, bl['y0'], bl['y1'], bl['z'] - 0.009, bl['z'] + 0.009, 'black_steel'); x += 0.11
 for pts in st.get('rails', []):
     for i in range(1, len(pts)): rod(pts[i - 1], pts[i], 0.022, 'walnut')
+for sw in st.get('walls', []):          # short solid stair walls with a handrail on top
+    zc = (sw['z1'] + sw['z2']) / 2
+    if sw['kind'] == 'knee':
+        rod([sw['rail'][0], sw['y1'] + 0.05, zc], [sw['rail'][1], sw['y1'] + 0.05, zc], 0.028, 'walnut'); continue
+    p = sw['pts']
+    for i in range(1, len(p)):
+        (xa, ta, ba), (xb, tb, bb) = p[i - 1], p[i]
+        box(min(xa, xb), max(xa, xb), min(ba, bb), (ta + tb) / 2, sw['z1'], sw['z2'], 'render')
+        rod([xa, ta + 0.05, zc], [xb, tb + 0.05, zc], 0.028, 'walnut')
 
 # ---------------- floor finishes ----------------
 for f in P['finishes']:

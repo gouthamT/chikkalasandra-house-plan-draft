@@ -23,9 +23,9 @@ const X = x => POX + x * PS, Z = z => POY + z * PS;
 const T = (x, y, t, cls, anchor = 'middle', extra = '') => `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" class="${cls}" text-anchor="${anchor}" ${extra}>${t}</text>`;
 const RC = (x1, x2, z1, z2, cls, extra = '') => `<rect x="${X(x1).toFixed(1)}" y="${Z(z1).toFixed(1)}" width="${((x2 - x1) * PS).toFixed(1)}" height="${((z2 - z1) * PS).toFixed(1)}" class="${cls}" ${extra}/>`;
 const onLevel = (lv, item) => item.lv === lv || (item.lv === -1 && (lv === 0 || String(item.id).startsWith('CORE')));
-const LABEL_POS = { front: [0.45, 2.0], passage: [1.65, 4.9], carbay: [3.3, 3.12], foyer: [3.2, 5.6], laundry: [4.62, 5.78], bikebay: [8.3, 3.95], store: [10.55, 4.25],
-  balc1: [1.72, 2.2], powder: [3.3, 1.95], hall1: [3.17, 3.1], living: [5.55, 3.4], kitchen: [8.1, 4.4], pooja: [7.35, 2.6], bed2: [8.85, 2.4],
-  lounge: [2.6, 3.1], nook: [1.8, 5.75], master: [8.3, 3.7], ensuite: [6.1, 2.25], hall2: [5.7, 3.1], cabin: [3.17, 5.3], roof: [3.4, 1.3], roofrear: [9.6, 4.4] };
+const LABEL_POS = { front: [0.45, 2.0], passage: [1.65, 4.9], carbay: [3.3, 3.12], foyer: [3.17, 4.4], utility: [6.2, 4.3], laundry: [4.95, 5.12], store: [10.55, 4.25],
+  balc1: [1.72, 2.2], powder: [3.2, 1.75], hall1: [3.2, 4.45], bed1: [4.65, 2.15], living: [8.3, 1.55], kitchen: [10.1, 4.45], pooja: [10.55, 1.45], landing1: [9.05, 5.3],
+  lounge: [2.4, 4.45], nook: [1.72, 1.15], master: [5.65, 1.3], ensuite: [3.6, 2.2], hall2: [6.0, 4.3], bath2: [10.45, 5.15], bed2: [8.9, 1.5], cabin: [3.17, 5.45], roof: [3.6, 1.55], roofrear: [10.0, 4.4] };
 function planSvg(lv) {
   const W = POX + 12.6 * PS + 40, H = POY + 6.3 * PS + 40;
   let s = `<defs><pattern id="chk${lv}" width="16.8" height="16.8" patternUnits="userSpaceOnUse"><rect width="16.8" height="16.8" fill="var(--panel)"/><rect width="8.4" height="8.4" fill="var(--line)"/><rect x="8.4" y="8.4" width="8.4" height="8.4" fill="var(--line)"/></pattern><marker id="ah${lv}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--ink)"/></marker></defs>`;
@@ -44,8 +44,9 @@ function planSvg(lv) {
     else if (rel > 1.6 && rel < 3.15) s += RC(d.x1, d.x2, d.z1, d.z2, 'pl-step', 'stroke-dasharray="2 2"');
   }
   const SL = P.stairLane, sp = P.spirals[0], ST = P.stair;
-  if (ST && lv < 3) s += `<path d="M${ST.arrow.map(([x, z]) => `${X(x).toFixed(1)} ${Z(z).toFixed(1)}`).join(' L')}" class="pl-arrow" fill="none" marker-end="url(#ah${lv})"/>` + T(X(ST.up[0]), Z(ST.up[1]), 'UP', 'pl-small');
-  if (ST && lv >= 1) s += T(X(ST.dn[0]), Z(ST.dn[1]), 'DN', 'pl-small');
+  const AR = ST && (ST.arrows ? ST.arrows[lv] : lv < 3 && ST.arrow), UPL = ST && (ST.ups ? ST.ups[lv] : ST.up), DNL = ST && (ST.dns ? ST.dns[lv] : lv >= 1 && ST.dn);
+  if (AR) s += `<path d="M${AR.map(([x, z]) => `${X(x).toFixed(1)} ${Z(z).toFixed(1)}`).join(' L')}" class="pl-arrow" fill="none" marker-end="url(#ah${lv})"/>` + (UPL ? T(X(UPL[0]), Z(UPL[1]), 'UP', 'pl-small') : '');
+  if (DNL) s += T(X(DNL[0]), Z(DNL[1]), 'DN', 'pl-small');
   if (lv >= 1 && sp) {
     const cx = X(sp.cx), cy = Z(sp.cz), R = sp.rOut * PS;
     s += `<circle cx="${cx}" cy="${cy}" r="${R}" class="pl-step"/><circle cx="${cx}" cy="${cy}" r="${sp.rIn * PS}" class="pl-wall"/>`;
@@ -63,7 +64,7 @@ function planSvg(lv) {
     if (f.shape === 'counterE' && f.sink) s += `<rect x="${X(f.x1 + .08).toFixed(1)}" y="${Z(f.sink[0]).toFixed(1)}" width="${(f.x2 - f.x1 - .18) * PS}" height="${(f.sink[1] - f.sink[0]) * PS}" rx="4" class="pl-swing" style="stroke-dasharray:none"/>` + T(X(f.x1) - 4, Z((f.sink[0] + f.sink[1]) / 2) + 3, 'SINK 2', 'pl-small', 'end');
     if (f.shape === 'counterE') { const cx = X((f.x1 + f.x2) / 2); for (const zz of [f.hob[0] + .15, f.hob[1] - .15]) s += `<circle cx="${cx}" cy="${Z(zz)}" r="6" class="pl-swing" style="stroke-dasharray:none"/>`; s += T(cx - 12, Z((f.hob[0] + f.hob[1]) / 2) + 3, 'HOB', 'pl-small', 'end'); }
   }
-  if (lv === 0) s += T(X(3.3), Z(1.95), 'CAR 4.00 × 1.75', 'pl-small') + T(X(8.3), Z(4.82), 'BIKE', 'pl-small') + RC(5.6, 10.9, 0.98, 3.35, 'pl-vehicle', 'rx="2" opacity=".55"') + T(X(8.25), Z(2.25), '2ND CAR (TANDEM)', 'pl-small');
+  if (lv === 0) s += T(X(3.3), Z(1.95), 'CAR 4.00 × 1.75', 'pl-small') + T(X(7.0), Z(1.42), 'BIKE', 'pl-small') + RC(5.6, 10.9, 0.98, 3.35, 'pl-vehicle', 'rx="2" opacity=".55"') + T(X(8.25), Z(2.95), '2ND CAR (TANDEM)', 'pl-small');
   for (const w of P.walls.filter(w => onLevel(lv, w))) {
     const alongX = w.axis === 'x', lo = alongX ? w.x1 : w.z1, hi = alongX ? w.x2 : w.z2;
     const cls = w.kind === 'compound' || w.kind === 'parapet' ? 'pl-cwall' : w.kind === 'rail' || w.kind === 'sguard' ? 'pl-rail' : w.kind === 'screen' ? 'pl-win' : 'pl-wall';
@@ -93,11 +94,11 @@ function planSvg(lv) {
     const [lx, lz] = LABEL_POS[r.id], w = r.x2 - r.x1, d = r.z2 - r.z1;
     if (r.id === 'front') { s += T(X(lx), Z(4.45), 'FRONT GARDEN', 'pl-small', 'middle', `transform="rotate(-90 ${X(lx)} ${Z(4.45)})"`); continue; }
     s += T(X(lx), Z(lz), r.short, 'pl-label');
-    if (!['front', 'stairs', 'spiral', 'hall2', 'hall1', 'passage', 'landing1', 'kitchen', 'pooja', 'powder', 'ensuite', 'laundry', 'cabin', 'nook', 'foyer'].includes(r.id)) s += T(X(lx), Z(lz) + 13, `${w.toFixed(2)} × ${d.toFixed(2)}`, 'pl-dim');
+    if (!['front', 'stairs', 'spiral', 'hall2', 'hall1', 'passage', 'landing1', 'kitchen', 'pooja', 'powder', 'ensuite', 'laundry', 'cabin', 'nook', 'foyer', 'utility', 'bath2'].includes(r.id)) s += T(X(lx), Z(lz) + 13, `${w.toFixed(2)} × ${d.toFixed(2)}`, 'pl-dim');
   }
-  if (lv === 3) s += T(X(5.3), Z(3.45), 'STAIR CABIN · TANK + SKYLIGHT OVER', 'pl-small') + T(X(9.8), Z(1.15), 'SOLAR OVER DRYING DECK', 'pl-small');
+  if (lv === 3) s += T(X(5.0), Z(4.62), 'STAIR CABIN · TANK + SKYLIGHT OVER', 'pl-small') + T(X(9.8), Z(1.15), 'SOLAR OVER DRYING DECK', 'pl-small');
   if (lv === 0) s += T(X(5.3), Z(3.5), 'GLASS SCREEN', 'pl-small');
-  const chain = lv === 0 ? [0, 0.9, 2.4, 3.8, 6.915, 9.8, 11.49, 12.192] : lv === 3 ? [0.9, 2.4, 6.915, 11.49] : lv === 1 ? [0.9, 2.4, 4.2, 6.8, 8.0, 11.49] : [0.9, 2.4, 4.6, 6.915, 11.49];
+  const chain = lv === 0 ? [0, 0.9, 2.4, 3.8, 8.55, 9.55, 11.49, 12.192] : lv === 3 ? [0.9, 2.4, 7.665, 11.49] : lv === 1 ? [0.9, 2.4, 5.715, 9.0, 11.49] : [0.9, 4.1, 7.53, 9.55, 11.49];
   const yT = POY - 30;
   s += `<line x1="${X(chain[0])}" y1="${yT}" x2="${X(chain[chain.length - 1])}" y2="${yT}" class="pl-dline"/>`;
   chain.forEach((v, i) => { s += `<line x1="${X(v)}" y1="${yT - 5}" x2="${X(v)}" y2="${yT + 5}" class="pl-dline"/>`; if (i) { const a = chain[i - 1]; s += T(X((a + v) / 2), yT - 6, (v - a).toFixed(2), 'pl-dim'); } });
@@ -112,9 +113,8 @@ function buildElevation() {
   const ES = 44, OX = 40, base = 620, ex = z => OX + z * ES, ey = y => base - y * ES;
   const Wd = OX * 2 + 6.4 * ES, H = base + 40, yTop = P.levels[3];
   let s = `<rect x="0" y="0" width="${Wd + 120}" height="${H}" class="el-sky"/>`;
-  s += `<rect x="${ex(3.635)}" y="${ey(yTop + 2.55)}" width="${(6.096 - 3.635) * ES}" height="${2.55 * ES}" class="el-back"/>`;
-  s += `<rect x="${ex(4.3)}" y="${ey(yTop + 2.1)}" width="${1.0 * ES}" height="${1.1 * ES}" class="el-glass"/>`;
-  s += `<rect x="${ex(4.7)}" y="${ey(yTop + 2.7 + 1.3)}" width="${1.1 * ES}" height="${1.3 * ES}" class="el-back"/>`;
+  s += `<rect x="${ex(4.751)}" y="${ey(yTop + 2.55)}" width="${(6.096 - 4.751) * ES}" height="${2.55 * ES}" class="el-back"/>`;
+  s += `<rect x="${ex(4.85)}" y="${ey(yTop + 2.7 + 1.3)}" width="${1.1 * ES}" height="${1.3 * ES}" class="el-back"/>`;
   s += `<rect x="${ex(0.7)}" y="${ey(yTop + 1.0)}" width="${(6.096 - 0.7) * ES}" height="${(yTop + 1.0) * ES}" class="el-render"/>`;
   s += `<rect x="${ex(0.93)}" y="${ey(3.0)}" width="${(5.866 - 0.93) * ES}" height="${3.0 * ES}" class="el-void"/>`;
   for (const lv of [1, 2]) {
@@ -127,8 +127,8 @@ function buildElevation() {
       s += `<rect x="${ex(a)}" y="${ey(y0 + (lv === 2 ? .45 : 1.05))}" width="${(b - a) * ES}" height="${(lv === 2 ? .45 : 1.05) * ES}" class="el-render"/>`;
     }
   }
-  s += `<rect x="${ex(1.5)}" y="${ey(yTop + 2.8)}" width="${2.05 * ES}" height="${0.2 * ES}" class="el-wood"/>`;
-  for (const z of [1.6, 3.33]) s += `<rect x="${ex(z)}" y="${ey(yTop + 2.6)}" width="${.12 * ES}" height="${1.6 * ES}" class="el-wood"/>`;
+  s += `<rect x="${ex(1.7)}" y="${ey(yTop + 2.8)}" width="${3.32 * ES}" height="${0.2 * ES}" class="el-wood"/>`;
+  for (const z of [1.7, 4.9]) s += `<rect x="${ex(z)}" y="${ey(yTop + 2.6)}" width="${.12 * ES}" height="${1.6 * ES}" class="el-wood"/>`;
   s += `<path d="M${ex(-0.15)} ${ey(-0.15)} V${ey(2.7)} H${ex(6.246)} V${ey(-0.15)} Z" class="el-render"/>`;
   s += `<rect x="${ex(0.15)}" y="${ey(2.15)}" width="${3.2 * ES}" height="${2.3 * ES}" class="el-gate"/>`;
   for (let z = 0.18; z < 3.33; z += 0.075) s += `<line x1="${ex(z)}" y1="${ey(-0.1)}" x2="${ex(z)}" y2="${ey(2.15)}" class="el-batten"/>`;
@@ -142,9 +142,9 @@ function buildElevation() {
   const svg = document.getElementById('elevSvg'); svg.setAttribute('viewBox', `0 0 ${Wd + 120} ${H}`); svg.style.minWidth = '440px'; svg.style.maxWidth = '640px'; svg.innerHTML = s;
 }
 function buildTables() {
-  const order = [[0, ['passage', 'foyer', 'laundry', 'carbay', 'bikebay', 'store']], [1, ['balc1', 'powder', 'living', 'pooja', 'kitchen', 'bed2']], [2, ['lounge', 'nook', 'ensuite', 'master']], [3, ['roof', 'roofrear']]];
+  const order = [[0, ['passage', 'foyer', 'utility', 'laundry', 'carbay', 'store']], [1, ['balc1', 'bed1', 'powder', 'living', 'kitchen', 'pooja']], [2, ['lounge', 'nook', 'master', 'ensuite', 'bed2', 'bath2']], [3, ['roof', 'roofrear']]];
   const floorName = ['Stilt', 'First floor', 'Second floor', 'Roof'];
-  const fl = { lounge: 'Terracotta + oxide', nook: 'Terracotta', hall1: 'Stone-look porcelain', powder: 'Anti-skid tile', study: 'Green oxide', pooja: 'Stone-look porcelain', balc1: 'Terracotta', balc2: 'Terracotta', living: 'Stone-look porcelain', kitchen: 'Stone-look porcelain', hall2: 'Stone-look porcelain', bath1: 'Anti-skid tile', bath2: 'Anti-skid tile', ensuite: 'Anti-skid tile', bed1: 'Green oxide', bed2: 'Green oxide', master: 'Green oxide', roof: 'Terracotta + lawn', roofrear: 'Terracotta', passage: 'Checkerboard marble', foyer: 'Checkerboard marble', landing1: 'Stone-look porcelain', store: 'Concrete', carbay: 'Concrete pavers', laundry: 'Checkerboard marble', bikebay: 'Concrete', cabin: 'Stone-look porcelain' };
+  const fl = { lounge: 'Terracotta + oxide', nook: 'Terracotta', hall1: 'Terrazzo', powder: 'Anti-skid tile', study: 'Pale yellow oxide', pooja: 'Terrazzo', balc1: 'Terracotta', balc2: 'Terracotta', living: 'Terrazzo', kitchen: 'Terrazzo', hall2: 'Terrazzo', bath1: 'Anti-skid tile', bath2: 'Anti-skid tile', ensuite: 'Anti-skid tile', bed1: 'Pale yellow oxide', bed2: 'Pale yellow oxide', master: 'Pale yellow oxide', roof: 'Terracotta + lawn', roofrear: 'Terracotta', passage: 'Checkerboard marble', foyer: 'Checkerboard marble', landing1: 'Terrazzo', store: 'Concrete', carbay: 'Concrete pavers', laundry: 'Checkerboard marble', utility: 'Checkerboard marble', bed1: 'Pale yellow oxide', bikebay: 'Concrete', cabin: 'Terrazzo' };
   let rows = '';
   for (const [lv, ids] of order) {
     rows += `<tr class="sub"><td colspan="6">${floorName[lv]}</td></tr>`;
@@ -154,7 +154,7 @@ function buildTables() {
   const fp = P.footprint, foot = (fp.x2 - fp.x1) * (fp.z2 - fp.z1), plot = P.plot.depth * P.plot.width;
   rows += `<tr class="sub"><td>Built-up, first + second floors</td><td></td><td></td><td class="n">${(2 * foot).toFixed(1)} m²</td><td class="n">${(2 * foot * 10.764).toFixed(0)} sq ft</td><td>FAR ${(2 * foot / plot).toFixed(2)} of 1.75 · stilt and stair cabin excluded</td></tr>`;
   document.getElementById('areaTable').innerHTML = `<thead><tr><th>Room</th><th>Clear size</th><th>Feet</th><th>Area</th><th></th><th>Floor finish</th></tr></thead><tbody>${rows}</tbody>`;
-  document.getElementById('kpis').innerHTML = `<div><b>${(2 * foot).toFixed(1)} m²</b><span>built-up on two floors (${(2 * foot * 10.764).toFixed(0)} sq ft)</span></div><div><b>${(2 * foot / plot).toFixed(2)}</b><span>FAR used of 1.75</span></div><div><b>${(100 * foot / plot).toFixed(0)}%</b><span>ground coverage (check cap)</span></div><div><b>2 + lounge</b><span>bedrooms, plus the family lounge</span></div><div><b>${P.rooms.length} / ${P.rooms.length}</b><span>zones reached in walk test</span></div>`;
+  document.getElementById('kpis').innerHTML = `<div><b>${(2 * foot).toFixed(1)} m²</b><span>built-up on two floors (${(2 * foot * 10.764).toFixed(0)} sq ft)</span></div><div><b>${(2 * foot / plot).toFixed(2)}</b><span>FAR used of 1.75</span></div><div><b>${(100 * foot / plot).toFixed(0)}%</b><span>ground coverage (check cap)</span></div><div><b>3 + lounge</b><span>bedrooms (one a guest room / study), plus the family lounge</span></div><div><b>${P.rooms.length} / ${P.rooms.length}</b><span>zones reached in walk test</span></div>`;
   let dr = '';
   const lvName = w => w.lv === -1 ? (w.id.startsWith('CORE') ? 'All floors' : 'Boundary') : floorName[w.lv];
   for (const w of P.walls) for (const o of (w.open || [])) {
@@ -165,7 +165,7 @@ function buildTables() {
 }
 {
   const host = document.getElementById('plans'); let html = '';
-  const titles = ['Stilt floor · ±0.00: parking, porch, foyer, U-turn stair, laundry', 'First floor · +3.15: loggia, living, pooja, kitchen + island, bedroom 2, bath', 'Second floor · +6.30: family lounge, master suite', 'Roof · +9.45: garden, stair cabin, solar, drying'];
+  const titles = ['Stilt floor · ±0.00: parking, porch, main door, entry hall beside the stair, laundry + storage under it', 'First floor · +3.15: loggia, bedroom 1 with ensuite, living, kitchen + island, pooja', 'Second floor · +6.30: family lounge, master suite, guest room / study with ensuite', 'Roof · +9.45: garden, stair cabin with the tank, solar, drying'];
   for (let lv = 0; lv < 4; lv++) { const { svg, W, H } = planSvg(lv); html += `<h3>${titles[lv]}</h3><div class="svgbox"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${titles[lv]}">${svg}</svg></div>`; }
   host.innerHTML = html;
   buildElevation(); buildTables();
@@ -195,13 +195,14 @@ function grain(g, s, base, dark, light) {
 }
 function grout(g, s, nx, ny, col, w) { g.strokeStyle = col; g.lineWidth = w; for (let i = 0; i <= nx; i++) { g.beginPath(); g.moveTo(i * s / nx, 0); g.lineTo(i * s / nx, s); g.stroke(); } for (let j = 0; j <= ny; j++) { g.beginPath(); g.moveTo(0, j * s / ny); g.lineTo(s, j * s / ny); g.stroke(); } }
 const TEX = {
-  stoneTile: canvasTex(512, (g, s) => { mottle(g, s, '#cdc7bb', ['#d8d3c8', '#bfb8ab', '#c7c1b4'], 220, 10, 60, .35);
-    g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = 1.5; for (let i = 0; i < 9; i++) { g.beginPath(); let x = rnd() * s, y = rnd() * s; g.moveTo(x, y); for (let k = 0; k < 6; k++) { x += (rnd() - .3) * 90; y += (rnd() - .5) * 40; g.lineTo(x, y); } g.stroke(); }
-    grout(g, s, 1, 2, 'rgba(90,85,75,.35)', 2); }),
+  stoneTile: canvasTex(512, (g, s) => { mottle(g, s, '#e8e0d0', ['#efe8da', '#ddd4c2'], 160, 10, 50, .3);
+    const chips = ['#a5a77b', '#b4593a', '#8b5e34', '#f7f4ec', '#c9b48a', '#9db19a'];
+    for (let i = 0; i < 1400; i++) { g.globalAlpha = .55 + .4 * rnd(); g.fillStyle = chips[i % chips.length]; const x = rnd() * s, y = rnd() * s, r = 1 + rnd() * 3.2; g.beginPath(); g.ellipse(x, y, r, r * (.6 + rnd() * .4), rnd() * 3, 0, 7); g.fill(); }
+    g.globalAlpha = 1; grout(g, s, 1, 1, 'rgba(176,141,87,.45)', 1.5); }),
   checker: canvasTex(256, (g, s) => { const c = s / 4; for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { g.fillStyle = (i + j) % 2 ? '#1f1f1d' : '#efede7'; g.fillRect(i * c, j * c, c, c); }
     mottle(g, s, null, ['#ffffff', '#8d8a82'], 160, 2, 10, .12); }),
   concrete: canvasTex(256, (g, s) => { mottle(g, s, '#a7a49c', ['#b4b1a9', '#99968e', '#8f8c84'], 500, 2, 14, .4); grout(g, s, 2, 2, 'rgba(60,58,52,.35)', 2); }),
-  oxide: canvasTex(512, (g, s) => mottle(g, s, '#a9bf97', ['#b9cda8', '#98af86', '#c3d3b2'], 260, 6, 40, .35)),
+  oxide: canvasTex(512, (g, s) => mottle(g, s, '#e3d3a0', ['#eadcb0', '#d8c68e', '#efe3bf'], 260, 6, 40, .35)),
   wet: canvasTex(256, (g, s) => { mottle(g, s, '#d4d4cc', ['#c9c9c0', '#dedfd8'], 60, 4, 20, .4); grout(g, s, 2, 2, 'rgba(80,85,75,.35)', 2); }),
   wetdark: canvasTex(128, (g, s) => { mottle(g, s, '#a9aaa2', ['#9c9d95', '#b6b7af'], 60, 2, 8, .5); grout(g, s, 4, 4, 'rgba(50,52,48,.4)', 1.5); }),
   terracotta: canvasTex(256, (g, s) => { mottle(g, s, '#b9643f', ['#c87652', '#a8573a', '#c06a45'], 160, 4, 26, .5); grout(g, s, 3, 3, 'rgba(240,226,206,.6)', 3); }),
@@ -213,8 +214,8 @@ const TEX = {
   stepping: canvasTex(256, (g, s) => { mottle(g, s, '#6f8f48', ['#7d9d55', '#5f7f3c'], 200, 2, 6, .6); g.fillStyle = '#c9c2b2'; for (let j = 0; j < 3; j++) g.fillRect(s * .1, j * s / 3 + 10, s * .8, s / 3 - 26); }),
   soil: canvasTex(128, (g, s) => mottle(g, s, '#5a4532', ['#4b3828', '#6a5240'], 300, 1, 4, .6)),
   rug: canvasTex(256, (g, s) => { g.fillStyle = '#d9cfbd'; g.fillRect(0, 0, s, s); mottle(g, s, null, ['#cbbfa9', '#e3dac9'], 400, 1, 3, .5); g.strokeStyle = '#b6a78d'; g.lineWidth = 6; g.strokeRect(14, 14, s - 28, s - 28); }),
-  walnut: canvasTex(256, (g, s) => grain(g, s, '#6e4428', '#563319', '#86573a')),
-  render: canvasTex(256, (g, s) => mottle(g, s, '#eeece6', ['#e6e3dc', '#f5f4f0'], 300, 6, 30, .35))
+  walnut: canvasTex(256, (g, s) => grain(g, s, '#8b5e34', '#734a26', '#a06e40')),
+  render: canvasTex(256, (g, s) => mottle(g, s, '#f3ebdd', ['#eee4d2', '#f7f0e4', '#ebe1cf'], 360, 8, 40, .4))
 };
 const texCache = {};
 function texMat(name, w, d, tile, extra = {}) {
@@ -227,23 +228,23 @@ const TILE = { stoneTile: 1.2, checker: 1.2, concrete: 1.2, oxide: 1.6, wet: 0.6
 const mat = (c, o = {}) => { const m = new THREE.MeshStandardMaterial({ color: c, roughness: .85, ...o }); m.color.convertSRGBToLinear(); return m; };
 const M = {
   render: new THREE.MeshStandardMaterial({ map: TEX.render, roughness: .95 }),
-  wallInt: mat(0xf2efe8, { roughness: .95 }),
-  slab: mat(0xe9e6df, { roughness: .95 }),
+  wallInt: mat(0xf3ebdd, { roughness: .95 }),
+  slab: mat(0xf7f4ec, { roughness: .95 }),
   glass: mat(0xbcd0d4, { transparent: true, opacity: .26, roughness: .08, depthWrite: false }),
   walnut: new THREE.MeshStandardMaterial({ map: TEX.walnut, roughness: .62 }),
-  white: mat(0xf2f1ee, { roughness: .55 }),
-  quartz: mat(0xf4f3f0, { roughness: .35 }),
-  sage: mat(0x9db19a, { roughness: .75 }),
-  linen: mat(0xe8e1d3, { roughness: .95 }),
-  boucle: mat(0xeae4d8, { roughness: 1 }),
+  white: mat(0xdde5b6, { roughness: .6 }),
+  quartz: mat(0xc9ae84, { roughness: .45 }),
+  sage: mat(0xdde5b6, { roughness: .7 }),
+  linen: mat(0xe6dcc8, { roughness: .95 }),
+  boucle: mat(0xa5a77b, { roughness: 1 }),
   cane: mat(0xc8a36a, { roughness: .9 }),
   black: mat(0x22221e, { roughness: .5, metalness: .2 }),
   steel: mat(0xb8b9b4, { roughness: .35, metalness: .5 }),
-  nickel: mat(0xa9a69c, { roughness: .3, metalness: .7 }),
+  nickel: mat(0x8c6b3e, { roughness: .35, metalness: .7 }),
   ceramic: mat(0xf6f5f1, { roughness: .2 }),
   terracotta: mat(0xb4593a, { roughness: .9 }),
   stone: mat(0xc6bfb1, { roughness: .8 }),
-  step: mat(0xd2ccc0, { roughness: .7 }),
+  step: mat(0xe8e0d0, { roughness: .6 }),
   car: mat(0x6c7f8c, { roughness: .3, metalness: .35 }),
   tyre: mat(0x1d1d1b, { roughness: .9 }),
   gateback: mat(0x3c2a1c),
@@ -350,7 +351,7 @@ function rod(a, b, r, m) {
 }
 for (const w of P.walls) {
   if (w.kind === 'screen') { steelFrame(true, w, w.x1, w.x2, w.y0, w.y1, true); continue; }
-  if (w.kind === 'sguard') continue;   // collision only: the stair balusters are drawn from P.stair
+  if (w.kind === 'sguard' || w.kind === 'knee') continue;   // drawn from P.stair.walls   // collision only: the stair balusters are drawn from P.stair
   if (w.kind === 'rail') {   // open balustrade: black-steel balusters, timber handrail
     const top = w.y1, ax = w.axis === 'x', c = ax ? (w.z1 + w.z2) / 2 : (w.x1 + w.x2) / 2, lo = ax ? w.x1 : w.z1, hi = ax ? w.x2 : w.z2;
     const bb = (u1, u2, y0, y1, h) => ax ? box(u1, u2, y0, y1, c - h, c + h, y1 - y0 > .2 ? M.black : M.walnut, false) : box(c - h, c + h, y0, y1, u1, u2, y1 - y0 > .2 ? M.black : M.walnut, false);
@@ -577,6 +578,30 @@ if (P.stair) {
     for (let x = b.x1 + .055; x < b.x2 - .005; x += .11) box(x - .009, x + .009, b.y0, b.y1, b.z - .009, b.z + .009, M.black, false);
     box(b.x1, b.x2, b.y0, b.y0 + .04, b.z - .02, b.z + .02, M.black, false);
   }
+  /* short solid stair walls: rounded (bullnose) top and ends, timber handrail on top */
+  const bull = (a, b, z, r) => rod(a, b, r, M.render);
+  for (const sw of (P.stair.walls || [])) {
+    const zc = (sw.z1 + sw.z2) / 2, t = sw.z2 - sw.z1, r = t / 2 + .01;
+    if (sw.kind === 'knee') {
+      box(sw.x1, sw.x2, sw.y0, sw.y1 - r, sw.z1, sw.z2, M.render);
+      bull([sw.x1, sw.y1 - r, zc], [sw.x2, sw.y1 - r, zc], zc, r);
+      for (const x of [sw.x1, sw.x2]) cyl(x, zc, r, sw.y0, sw.y1 - r - sw.y0, M.render, 14);
+      if (sw.rail) rod([sw.rail[0], sw.y1 + .05, zc], [sw.rail[1], sw.y1 + .05, zc], .028, M.walnut);
+      continue;
+    }
+    const pts = sw.pts, sh = new THREE.Shape();
+    sh.moveTo(pts[0][0], pts[0][2]);
+    for (const p of pts) sh.lineTo(p[0], p[2]);
+    for (let i = pts.length - 1; i >= 0; i--) sh.lineTo(pts[i][0], pts[i][1] - r);
+    sh.lineTo(pts[0][0], pts[0][2]);
+    const mesh = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: t, bevelEnabled: false }), M.render);
+    mesh.position.z = sw.z1; mesh.castShadow = mesh.receiveShadow = true; root.add(mesh);
+    for (let i = 1; i < pts.length; i++) {
+      bull([pts[i - 1][0], pts[i - 1][1] - r, zc], [pts[i][0], pts[i][1] - r, zc], zc, r);
+      rod([pts[i - 1][0], pts[i - 1][1] + .05, zc], [pts[i][0], pts[i][1] + .05, zc], .028, M.walnut);
+    }
+    for (const p of [pts[0], pts[pts.length - 1]]) cyl(p[0], zc, r, p[2], p[1] - r - p[2], M.render, 14);
+  }
   for (const pts of P.stair.rails) for (let i = 1; i < pts.length; i++) {
     const a = pts[i - 1], c = pts[i];
     if (Math.hypot(c[0] - a[0], c[1] - a[1], c[2] - a[2]) > .005) rod([a[0], a[1], a[2]], [c[0], c[1], c[2]], .022, M.walnut);
@@ -768,7 +793,7 @@ function showRoom(r) {
   rcLevel.textContent = r && (r.id === 'stairs' || r.id === 'spiral') ? `Stairs · ${LEVEL_NAMES[lv]}` : (me.feet < 1 ? (r && r.lv === 0 ? LEVEL_NAMES[0] : 'Outside') : LEVEL_NAMES[lv]);
   rcName.textContent = r ? r.name : 'Outside';
   const outdoor = !r || ['road', 'front', 'sidepath', 'rear', 'stairs', 'spiral'].includes(r.id);
-  rcDims.textContent = r && !outdoor ? dimTxt(r.x2 - r.x1, r.z2 - r.z1) : r && r.id === 'stairs' ? 'U-turn on every floor · 1.0 m flights · 17 × 185 mm risers · 250 mm treads' : r && r.id === 'spiral' ? '1.8 m diameter · 16 × 197 mm risers per floor · 22.5° treads' : '';
+  rcDims.textContent = r && !outdoor ? dimTxt(r.x2 - r.x1, r.z2 - r.z1) : r && r.id === 'stairs' ? 'One straight stair, stacked on every floor · 1.0 m wide · 17 × 185 mm risers · 250 mm treads · rest landing midway' : r && r.id === 'spiral' ? '1.8 m diameter · 16 × 197 mm risers per floor · 22.5° treads' : '';
   const notes = r ? r.notes : [];
   rcNotes.innerHTML = notes.slice(0, expanded ? notes.length : 1).map(n => `<p>${n}</p>`).join('');
   rcMore.hidden = notes.length <= 1;
@@ -833,6 +858,131 @@ mini.addEventListener('click', e => {
   hideHelp();
 });
 
+/* ---------------- sound for the cinematic tour: generated ambient music (Web Audio) + spoken narration ---------------- */
+const Snd = (() => {
+  let ac = null, master, music, verb, dest = null, timer = null, nextT = 0, ci = 0, live = false;
+  const CH = [[146.83, 220, 277.18, 369.99], [123.47, 185, 220, 277.18, 293.66], [98, 146.83, 185, 246.94], [110, 164.81, 220, 246.94, 329.63]];
+  const MEL = [440, 493.88, 587.33, 659.25, 739.99, 880, 987.77];
+  function init() {
+    if (ac) return true;
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
+    ac = new AC(); master = ac.createGain(); master.gain.value = .8; master.connect(ac.destination);
+    if (ac.createMediaStreamDestination) { dest = ac.createMediaStreamDestination(); master.connect(dest); }
+    verb = ac.createConvolver(); const len = ac.sampleRate * 3.4, ib = ac.createBuffer(2, len, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ib.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+    verb.buffer = ib; const vg = ac.createGain(); vg.gain.value = .5; verb.connect(vg); vg.connect(master);
+    music = ac.createGain(); music.gain.value = 0; music.connect(master); music.connect(verb);
+    return true;
+  }
+  function pad(fs, t, dur) {
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; lp.Q.value = .3; lp.connect(music);
+    const g = ac.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.045, t + 2.6); g.gain.setValueAtTime(.045, t + dur - .5); g.gain.linearRampToValueAtTime(0, t + dur + 2.8); g.connect(lp);
+    for (const f of fs) for (const [type, det] of [['sine', -5], ['triangle', 5]]) {
+      const o = ac.createOscillator(); o.type = type; o.frequency.value = f; o.detune.value = det; o.connect(g); o.start(t); o.stop(t + dur + 3);
+    }
+  }
+  function pluck(f, t, lvl = .05) {
+    const g = ac.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(lvl, t + .01); g.gain.exponentialRampToValueAtTime(.0005, t + 2.8); g.connect(music);
+    for (const [m, a] of [[1, 1], [2, .25], [3, .08]]) { const o = ac.createOscillator(), og = ac.createGain(); o.frequency.value = f * m; og.gain.value = a; o.connect(og); og.connect(g); o.start(t); o.stop(t + 3); }
+  }
+  function tick() {
+    while (nextT < ac.currentTime + 2.5) {
+      const dur = 8; pad(CH[ci % CH.length], nextT, dur);
+      for (let k = 0; k < 3; k++) if (Math.random() < .7) pluck(MEL[Math.floor(Math.random() * MEL.length)], nextT + 1 + k * 2.3 + Math.random() * .6, .028);
+      nextT += dur; ci++;
+    }
+  }
+  return {
+    get dest() { return dest; },
+    start() { if (!init()) return; ac.resume && ac.resume(); if (live) return; live = true; nextT = ac.currentTime + .1; ci = 0; tick(); timer = setInterval(tick, 700);
+      music.gain.cancelScheduledValues(ac.currentTime); music.gain.setTargetAtTime(1, ac.currentTime, 1.2); },
+    stop() { if (!ac || !live) return; live = false; clearInterval(timer); music.gain.cancelScheduledValues(ac.currentTime); music.gain.setTargetAtTime(0, ac.currentTime, .8); },
+    chime() { if (ac && live) { const t = ac.currentTime + .05; pluck(1174.66, t, .03); pluck(1479.98, t + .18, .025); } },
+    duck(on) { if (ac && live) music.gain.setTargetAtTime(on ? .3 : 1, ac.currentTime, .4); },
+    resume() { init(); return ac && ac.resume ? ac.resume() : Promise.resolve(); },
+    get locked() { return !ac || ac.state !== 'running'; }
+  };
+})();
+const SOUND_LABELS = ['Sound: music + voice', 'Sound: music only', 'Sound: off'];
+let soundMode = 0;
+try { const v = +localStorage.getItem('chk-sound'); if (v >= 0 && v <= 2) soundMode = v; } catch (_) {}
+const bSound = document.getElementById('bSound');
+bSound.textContent = SOUND_LABELS[soundMode];
+bSound.addEventListener('click', () => { soundMode = (soundMode + 1) % 3; bSound.textContent = SOUND_LABELS[soundMode]; try { localStorage.setItem('chk-sound', soundMode); } catch (_) {} });
+let voice = null;
+function pickVoice() {
+  if (!window.speechSynthesis) return;
+  const vs = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang)); if (!vs.length) return;
+  const FEM = /female|woman|samantha|karen|moira|tessa|veena|kate|serena|susan|victoria|allison|ava|zoe|fiona|catherine|isha|heera|neerja|natasha|sonia|libby|aria|jenny|michelle|emma|ana|salli|joanna|kendra|kimberly|ivy|amy|olivia|matilda|nicole|raveena|kajal|swara|kiara|clara|sara|hazel|zira|nora|shelley|sandy|flo|grandma/i;
+  const MALE = /\bmale\b|daniel|rishi|alex|fred|tom\b|arthur|oliver|gordon|\blee\b|aaron|ravi|prabhat|william|ryan|guy|christopher|eric|david|mark|george|james|thomas|reed|rocko|eddy|grandpa|ralph|albert|junior|brian|russell|matthew|joey|justin|kevin|liam|prakash|madhur/i;
+  const score = v => (FEM.test(v.name) ? 40 : 0) - (MALE.test(v.name) ? 60 : 0) + (/natural|premium|enhanced|neural/i.test(v.name) ? 10 : 0) + ({ 'en-IN': 4, 'en-AU': 3, 'en-GB': 2, 'en-US': 1 }[v.lang.replace('_', '-')] || 0) + (v.localService ? 1 : 0);
+  voice = vs.sort((a, b) => score(b) - score(a))[0];
+}
+if (window.speechSynthesis) { pickVoice(); speechSynthesis.addEventListener?.('voiceschanged', pickVoice); }
+function narrate(r) {
+  if (!window.speechSynthesis || soundMode !== 0 || !cine || cine.record || !r) return false;
+  const u = new SpeechSynthesisUtterance(r.name + '. ' + ((r.notes && r.notes[0]) || ''));
+  if (voice) u.voice = voice; u.rate = .96; u.pitch = voice && /female|woman/i.test(voice.name) ? 1 : 1.08;
+  const done = () => { if (cine) cine.speaking = false; Snd.duck(false); };
+  u.onend = done; u.onerror = done;
+  speechSynthesis.cancel(); speechSynthesis.speak(u); Snd.duck(true); return true;
+}
+
+/* ---------------- video recording of the cinematic tour (canvas + music, captions burned in) ---------------- */
+let DL = null;
+try { if (window.claude && claude.use) claude.use('downloads').then(d => { DL = d; }).catch(() => {}); } catch (_) {}
+let rec = null;
+function recSupported() { return !!(window.MediaRecorder && HTMLCanvasElement.prototype.captureStream); }
+function startRecording() {
+  if (!recSupported()) { say('This browser can\'t record video. Try Chrome, Edge or Safari.'); return; }
+  const src = renderer.domElement, k = Math.min(1, 1920 / src.width), comp = document.createElement('canvas');
+  comp.width = Math.round(src.width * k / 2) * 2; comp.height = Math.round(src.height * k / 2) * 2;
+  const tracks = [...comp.captureStream(30).getVideoTracks()];
+  Snd.start(); Snd.stop();   // make sure the audio graph exists so its track can be recorded
+  if (soundMode < 2 && Snd.dest) tracks.push(...Snd.dest.stream.getAudioTracks());
+  const type = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1.42E01E,opus', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'].find(t => MediaRecorder.isTypeSupported(t));
+  let mr; try { mr = new MediaRecorder(new MediaStream(tracks), { mimeType: type, videoBitsPerSecond: 5e6 }); } catch (e) { say('Recording could not start in this browser'); return; }
+  rec = { mr, chunks: [], comp, g: comp.getContext('2d'), ext: /mp4/.test(type || '') ? 'mp4' : 'webm', capT: 0, cap: null };
+  mr.ondataavailable = e => { if (e.data && e.data.size) rec.chunks.push(e.data); };
+  mr.onstop = () => { const r = rec; rec = null; document.getElementById('bRec').classList.remove('on'); saveVideo(new Blob(r.chunks, { type: (type || 'video/webm').split(';')[0] }), r.ext); };
+  startCine(true); mr.start(1000);
+  document.getElementById('bRec').classList.add('on');
+}
+function wrapLines(g, text, maxW) {
+  const out = []; let line = '';
+  for (const w of text.split(' ')) { const t = line ? line + ' ' + w : w; if (g.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t; }
+  if (line) out.push(line); return out;
+}
+function drawRecFrame(dt) {
+  const { g, comp } = rec, W = comp.width, H = comp.height;
+  g.drawImage(renderer.domElement, 0, 0, W, H);
+  const bar = Math.round(H * .075); g.fillStyle = '#0b0b0a'; g.fillRect(0, 0, W, bar); g.fillRect(0, H - bar, W, bar);
+  if (rec.cap) {
+    rec.capT += dt; const a = Math.min(1, rec.capT / 1.2);
+    const disp = getComputedStyle(document.documentElement).getPropertyValue('--display').trim() || 'Georgia, serif';
+    const body = getComputedStyle(document.documentElement).getPropertyValue('--body').trim() || 'system-ui, sans-serif';
+    const x = Math.max(W * .06, 16), fs1 = Math.round(H * .05), fs2 = Math.round(H * .022);
+    g.font = `400 ${fs2}px ${body}`; const lines = wrapLines(g, rec.cap.line, Math.min(W * .55, fs2 * 34)).slice(0, 4);
+    let y = H - bar - Math.round(H * .035) - lines.length * fs2 * 1.45;
+    g.save(); g.globalAlpha = a; g.shadowColor = 'rgba(0,0,0,.6)'; g.shadowBlur = Math.round(H * .012); g.fillStyle = '#f7f4ec';
+    g.font = `400 ${fs1}px ${disp}`; g.fillText(rec.cap.name, x, y - fs1 * .35);
+    g.font = `400 ${fs2}px ${body}`; for (const l of lines) { y += fs2 * 1.45; g.fillText(l, x, y); }
+    g.restore();
+  }
+}
+async function saveVideo(blob, ext) {
+  if (!blob.size) { say('Nothing was recorded'); return; }
+  const filename = `chikkalasandra-house-tour.${ext}`;
+  if (DL) {
+    try { const r = await DL.save({ filename, data: blob }); if (r && r.status === 'saved') say('Video saved'); return; }
+    catch (e) { if (e && (e.code === 'declined')) { say('Save cancelled'); return; } }
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 5000); say('Video ready: ' + filename);
+}
+document.getElementById('bRec').addEventListener('click', () => { if (rec) stopCine(); else startRecording(); });
+if (!recSupported()) document.getElementById('bRec').hidden = true;
+
 /* ---------------- cinematic tour: an automatic, smooth walk along a real route through every room ---------------- */
 const CI = P.cine;
 let cine = null;
@@ -851,24 +1001,31 @@ function cineCaption(r) {
   cineName.textContent = r.name;
   const n = (r.notes && r.notes[0]) || ''; cineLine.textContent = n.length > 150 ? n.slice(0, n.lastIndexOf(' ', 147)) + '…' : n;
   cineCap.classList.remove('show'); void cineCap.offsetWidth; cineCap.classList.add('show');
+  if (rec) { rec.cap = { name: r.name, line: n }; rec.capT = 0; }
+  if (cine) cine.cur = r;
 }
-function startCine() {
+function startCine(record) {
   if (!CI) return;
   if (document.pointerLockElement) document.exitPointerLock();
   setView(false); hideHelp();
-  cine = { d: 0, next: 1, dwell: 2.5, pan: 0, yaw: -Math.PI / 2, pitch: 0.02, y: CI.pts[0][1] + EYE, saved: { exp: renderer.toneMappingExposure, fov: camera.fov, evening } };
+  cine = { record: !!record, speaking: false, d: 0, next: 1, dwell: 2.5, pan: 0, yaw: -Math.PI / 2, pitch: 0.02, y: CI.pts[0][1] + EYE, saved: { exp: renderer.toneMappingExposure, fov: camera.fov, evening } };
   setTime(false);
   renderer.toneMappingExposure = 1.15; camera.fov = 56; camera.updateProjectionMatrix();
   sun.intensity = 1.55; hemi.intensity = .62; amb.intensity = .12; lamps.forEach(l => l.intensity = .55);
   document.body.classList.add('cine');
-  cineCaption(P.rooms.find(r => r.id === CI.stops[0].id));
+  const r0 = P.rooms.find(r => r.id === CI.stops[0].id); cineCaption(r0);
+  if (soundMode < 2) Snd.start();
+  setTimeout(() => { if (cine && soundMode < 2 && Snd.locked) cineSound.hidden = false; }, 500);
+  if (narrate(r0)) { cine.speaking = true; cine.room = r0; }
   document.getElementById('bCine').classList.add('on');
 }
 function stopCine() {
   if (!cine) return;
   const [x, y, z] = cineAt(cine.d), sv = cine.saved; cine = null;
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  Snd.stop(); if (rec && rec.mr.state !== 'inactive') setTimeout(() => rec && rec.mr.state !== 'inactive' && rec.mr.stop(), 600);
   renderer.toneMappingExposure = sv.exp; camera.fov = sv.fov; camera.updateProjectionMatrix(); setTime(sv.evening);
-  document.body.classList.remove('cine'); cineCap.classList.remove('show');
+  document.body.classList.remove('cine'); cineCap.classList.remove('show'); cineSound.hidden = true;
   document.getElementById('bCine').classList.remove('on');
   teleport(x, z, y, me.yaw); eyeY = null; curRoom = undefined;
 }
@@ -876,23 +1033,25 @@ function cineFrame(dt) {
   const c = cine, L = cum[cum.length - 1], SPEED = 0.85;
   const stopD = c.next < CI.stops.length ? cum[CI.stops[c.next].i] : L;
   let stopRoom = null;
-  if (c.dwell > 0) { c.dwell -= dt; c.pan += dt; }
+  if (c.speaking && c.dwell < -16) { c.speaking = false; Snd.duck(false); }   // never wait forever on a stuck voice
+  if (c.dwell > 0 || c.speaking) { c.dwell -= dt; c.pan += dt; }
   else {
     c.d = Math.min(stopD, c.d + SPEED * dt);
     if (c.d >= stopD - 1e-4) {
       if (c.next >= CI.stops.length) { stopCine(); say('End of the tour'); return; }
-      stopRoom = P.rooms.find(r => r.id === CI.stops[c.next].id); c.next++; c.dwell = 3.6; c.pan = 0; cineCaption(stopRoom); c.room = stopRoom;
+      stopRoom = P.rooms.find(r => r.id === CI.stops[c.next].id); c.next++; c.dwell = c.record ? 5 : 3.6; c.pan = 0; cineCaption(stopRoom); c.room = stopRoom;
+      Snd.chime(); c.speaking = narrate(stopRoom);
     }
   }
   const p = cineAt(c.d), q = cineAt(c.d + 1.4);
   let ty = Math.atan2(-(q[0] - p[0]), -(q[2] - p[2]));
   let tp = Math.max(-.32, Math.min(.25, Math.atan2(q[1] - p[1], Math.hypot(q[0] - p[0], q[2] - p[2]) + .01) * .8)) - .04;
-  if (c.dwell > 0 && c.room) {               // pause in each room: slow look around towards its centre
+  if ((c.dwell > 0 || c.speaking) && c.room) {               // pause in each room: slow look around towards its centre
     const rx = (c.room.x1 + c.room.x2) / 2 - p[0], rz = (c.room.z1 + c.room.z2) / 2 - p[2];
     if (Math.hypot(rx, rz) > .6 && c.room.id !== 'road') ty = Math.atan2(-rx, -rz);
     ty += Math.sin(c.pan * .55) * .45; tp = -.05;
   }
-  if (Math.hypot(q[0] - p[0], q[2] - p[2]) < .05 && c.dwell <= 0) ty = c.yaw;
+  if (Math.hypot(q[0] - p[0], q[2] - p[2]) < .05 && c.dwell <= 0 && !c.speaking) ty = c.yaw;
   c.yaw += angDiff(c.yaw, ty) * Math.min(1, dt * 1.6);
   c.pitch += (tp - c.pitch) * Math.min(1, dt * 1.6);
   c.y += (p[1] + EYE - c.y) * Math.min(1, dt * 5);
@@ -900,6 +1059,22 @@ function cineFrame(dt) {
   me.x = p[0]; me.z = p[2]; me.feet = p[1]; me.yaw = c.yaw;
 }
 document.getElementById('bCine').addEventListener('click', () => cine ? stopCine() : startCine());
+/* sound needs one tap when the tour started on its own (browsers block audio until the viewer interacts) */
+const cineSound = document.getElementById('cineSound');
+cineSound.addEventListener('click', e => {
+  e.stopPropagation(); cineSound.hidden = true;
+  Snd.resume().then(() => { if (cine && soundMode < 2) { Snd.start(); if (cine.cur && narrate(cine.cur)) cine.speaking = true; } });
+});
+/* auto-start: 3 s after the page and its 3D assets are ready, unless the viewer has already started doing something */
+let autoT = null, autoArmed = false;
+function cancelAuto() { if (autoT) { clearTimeout(autoT); autoT = null; } }
+function armAuto() {
+  if (autoArmed) return; autoArmed = true;
+  autoT = setTimeout(() => { autoT = null; if (active === 'walk' && !cine && !document.hidden) startCine(); }, 3000);
+}
+const whenReady = () => requestAnimationFrame(() => requestAnimationFrame(armAuto));
+if (document.readyState === 'complete') whenReady(); else addEventListener('load', whenReady);
+for (const ev of ['pointerdown', 'keydown', 'wheel', 'touchstart']) addEventListener(ev, cancelAuto, { capture: true, passive: true });
 addEventListener('keydown', e => { if (active !== 'walk') return; if (e.code === 'KeyC' && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName || '')) cine ? stopCine() : startCine(); else if (cine && e.code === 'Escape') stopCine(); });
 canvas.addEventListener('pointerdown', () => { if (cine) stopCine(); }, true);
 
@@ -909,7 +1084,7 @@ new ResizeObserver(resize).observe(stage); resize();
 let last = performance.now();
 function frame(t) {
   const dt = Math.min(.05, (t - last) / 1000); last = t;
-  if (active === 'walk') { if (cine) cineFrame(dt); else { update(dt); placeCamera(dt); } checkRoom(); drawMap(); renderer.render(scene, camera); }
+  if (active === 'walk') { if (cine) cineFrame(dt); else { update(dt); placeCamera(dt); } checkRoom(); drawMap(); renderer.render(scene, camera); if (rec) drawRecFrame(dt); }
   requestAnimationFrame(frame);
 }
 setView(false); setTime(false); reset(); curRoom = undefined;

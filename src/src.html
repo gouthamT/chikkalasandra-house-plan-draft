@@ -13,8 +13,8 @@
   --line:#DDD8CD;
   --walnut:#7A4E2D;
   --stone:#C9C3B7;
-  --stone-soft:#ECE8E0;
-  --oxide-soft:#E1E9D8;
+  --stone-soft:#EEE7DA;
+  --oxide-soft:#EFE4C2;
   --terracotta:#B4593A;
   --wet:#D6DAD3;
   --ok:#3F7A4A; --warn:#A8701C; --bad:#A2422F;
@@ -66,6 +66,8 @@ main{flex:1;min-height:0;position:relative}
 #controls{right:max(14px,env(safe-area-inset-right,0px));bottom:14px;padding:8px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:min(560px,calc(100% - 28px))}
 #controls button,#controls select{font:500 12.5px var(--body);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:7px 10px;cursor:pointer}
 #controls button.on{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+#controls #bCine{background:var(--walnut);color:#fbf8f2;border-color:var(--walnut);font-weight:600}
+#controls #bCine.on{background:var(--ink);border-color:var(--ink)}
 #help{left:50%;top:50%;transform:translate(-50%,-50%);padding:18px 20px;width:min(390px,calc(100% - 40px))}
 #help h3{font-family:var(--display);font-weight:400;font-size:21px;margin:0 0 4px}
 #help p{margin:0 0 10px;font-size:13.5px;color:var(--muted)}
@@ -166,6 +168,8 @@ tr.sub td{font-weight:600;background:var(--stone-soft)}
 .changes{border-left:3px solid var(--walnut);padding:4px 0 4px 14px;margin-top:14px}
 .changes p{margin:4px 0}
 #cineBars,#cineCap{display:none}
+#cineSound{position:absolute;right:max(16px,6%);top:calc(7.5% + 16px);z-index:5;font:600 13px var(--body);color:#0b0b0a;background:#f7f4ec;border:0;border-radius:999px;padding:9px 16px;cursor:pointer;box-shadow:0 2px 14px rgba(0,0,0,.35)}
+#cineSound[hidden]{display:none}
 body.cine #walk .hud,body.cine #cross,body.cine #joy{display:none!important}
 body.cine #cineBars{display:block;position:absolute;inset:0;pointer-events:none}
 #cineBars i{position:absolute;left:0;right:0;height:7.5%;background:#0b0b0a}
@@ -180,7 +184,7 @@ body.cine #cineCap{display:block;position:absolute;left:max(6%,16px);bottom:calc
 
 <div id="app">
   <header class="bar">
-    <div class="brand"><h1>Chikkalasandra House</h1><span class="meta">20 × 40 ft · west-facing · stilt + 2 + roof garden · B7</span></div>
+    <div class="brand"><h1>Chikkalasandra House</h1><span class="meta">20 × 40 ft · west-facing · stilt + 2 + roof garden · B10</span></div>
     <nav role="tablist" aria-label="Views">
       <button role="tab" id="t-walk" data-tab="walk" aria-selected="true">Walk</button>
       <button role="tab" id="t-plan" data-tab="plan" aria-selected="false">Plans</button>
@@ -204,27 +208,31 @@ body.cine #cineCap{display:block;position:absolute;left:max(6%,16px);bottom:calc
         <button class="more" id="rcMore" type="button">Read the design notes</button>
       </div>
       <div id="controls" class="hud">
+        <button id="bCine" type="button" title="Cinematic tour: an automatic walk through every room, with music and narration (C)">Cinematic tour</button>
+        <button id="bRec" type="button" title="Record the cinematic tour as a video file, with music and captions">Record video</button>
+        <button id="bSound" type="button" title="Music and narration for the cinematic tour">Sound: music + voice</button>
         <select id="jump" aria-label="Go to a room"></select>
         <button id="bPrev" type="button" title="Previous tour stop">‹ Prev</button>
         <button id="bNext" type="button" title="Next tour stop (N)">Next stop ›</button>
         <button id="bView" type="button" title="Switch view (V)">Overhead</button>
         <button id="bTime" type="button" title="Afternoon / evening light (L)">Evening</button>
-        <button id="bCine" type="button" title="Cinematic tour: an automatic walk through every room (C)">Cinematic tour</button>
         <button id="bHelp" type="button">Controls</button>
       </div>
       <div id="joy" hidden><i></i></div>
       <div id="cineBars" aria-hidden="true"><i></i><i></i></div>
-      <div id="cineCap" aria-live="polite"><b id="cineName"></b><span id="cineLine"></span><small>Click or press Esc to stop</small></div>
+      <button id="cineSound" type="button" hidden>Tap for sound</button>
+      <div id="cineCap" aria-live="polite"><b id="cineName"></b><span id="cineLine"></span><small id="cineHint">Click or press Esc to stop</small></div>
       <div id="help" class="hud">
         <h3>Walk the house</h3>
-        <p>Start on the road. Go through the gate and the main door, and the stair is right there at the front. It turns back on itself once between floors, and the next flight always starts from the landing you arrive on. Press <b>Cinematic tour</b> for an automatic walk through every room.</p>
+        <p>Start on the road. Go through the gate and the main door, walk along the entry hall beside the stair, and turn round onto it: it climbs west to the front of the first floor. Each floor's next flight starts at the back, directly above. The cinematic tour starts by itself after a few seconds; press any key or click to take over.</p>
         <dl id="helpKeys">
           <dt>Click + mouse</dt><dd>Look around (Esc to release)</dd>
           <dt>W A S D / arrows</dt><dd>Walk (stairs climb automatically)</dd>
           <dt>Shift</dt><dd>Walk faster</dd>
           <dt>N</dt><dd>Next tour stop</dd>
           <dt>V · L</dt><dd>Overhead view · evening light</dd>
-          <dt>C</dt><dd>Cinematic tour (Esc or click to stop)</dd>
+          <dt>C</dt><dd>Cinematic tour with music and narration (Esc or click to stop)</dd>
+          <dt>Record video</dt><dd>Saves the tour as a video file with music and captions</dd>
           <dt>R</dt><dd>Back to the gate</dd>
           <dt>Minimap</dt><dd>Click a spot to jump there</dd>
         </dl>
@@ -234,7 +242,7 @@ body.cine #cineCap{display:block;position:absolute;left:max(6%,16px);bottom:calc
 
     <section class="view scroll" id="plan" role="tabpanel" hidden>
       <div class="page"><div class="wrap">
-        <div class="eyebrow">Drawings B7 · provisional · not for construction</div>
+        <div class="eyebrow">Drawings B10 · provisional · not for construction</div>
         <h2>Plans, elevation and schedules</h2>
         <p class="lede">Drawn from the same data the 3D model uses, so the drawings and the walkthrough can't drift apart. Metres, with feet-inches alongside. External walls 230 mm, internal 115 mm, floor to floor 3.15 m (3.0 m clear).</p>
         <div id="plans"></div>
@@ -243,8 +251,8 @@ body.cine #cineCap{display:block;position:absolute;left:max(6%,16px);bottom:calc
           <span><i style="background:var(--muted)"></i>Parapet / compound wall</span>
           <span><i style="background:var(--walnut);height:3px"></i>Open balustrade</span>
           <span><i style="background:var(--walnut);width:12px;height:8px"></i>RCC column (every floor)</span>
-          <span><i style="background:var(--stone-soft);border:1px solid var(--line)"></i>Stone-look porcelain</span>
-          <span><i style="background:var(--oxide-soft);border:1px solid var(--line)"></i>Green oxide (bedrooms)</span>
+          <span><i style="background:var(--stone-soft);border:1px solid var(--line)"></i>Terrazzo (shared spaces, stair)</span>
+          <span><i style="background:var(--oxide-soft);border:1px solid var(--line)"></i>Pale yellow oxide (bedrooms)</span>
           <span><i style="background:var(--wet);border:1px solid var(--line)"></i>Anti-skid tile</span>
           <span><i style="background:var(--terracotta);opacity:.35"></i>Terracotta tile</span>
           <span><i style="border:1.5px dashed var(--warn)"></i>Setback (provisional)</span>
@@ -260,48 +268,49 @@ body.cine #cineCap{display:block;position:absolute;left:max(6%,16px);bottom:calc
 
     <section class="view scroll" id="report" role="tabpanel" hidden>
       <div class="page report"><div class="wrap">
-        <div class="eyebrow">Stage 1, revision B7 · feasibility</div>
-        <h2>The stair moves to the front</h2>
-        <p class="lede">The stair is now a U-turn at the front corner of every floor, so you never walk through a floor to reach the next flight. The plan still meets the main Vastu rules and keeps a simple, stackable frame. An architect still needs to confirm the small-plot setbacks and the ground-coverage cap, and a structural engineer must design the frame after a soil test.</p>
+        <div class="eyebrow">Stage 1, revision B10 · feasibility</div>
+        <h2>Best-Vastu straight stair, space used efficiently</h2>
+        <p class="lede">One straight stair in a single 1 m lane along the south wall, climbing west as Vastu prefers, with the laundry and storage underneath. No U or L turns and no second stair. An architect still needs to confirm the small-plot setbacks and the ground-coverage cap, and a structural engineer must design the frame after a soil test.</p>
         <div class="kpi" id="kpis"></div>
 
         <div class="changes">
-          <p><strong>What changed in B7.</strong> The stair is a stacked U-turn (dog-leg) in the front south-west corner. The main door now opens at the front, 2.4 m from the gate, straight onto the first flight. Each storey climbs east along one lane, turns at a half landing and comes back west along the south wall. You arrive facing the front, turn right into the floor, and the next flight starts from the same landing.</p>
-          <p>Because the stair no longer ends at the back of each floor, the rooms were re-planned. Bedroom 2 moved down to the north-east of the first floor and shares the front bathroom, which is now a full bathroom with a shower. The first-floor study went to make room for it. The second floor is now the family lounge plus one large master suite (about 21 m²) with its ensuite. The stilt gained a bike bay and workshop behind the stair, and the laundry sits inside the locked foyer.</p>
-          <p>The open stair side is a screen of slim black-steel balusters with a timber handrail, there are handrails on both sides of every flight, and a skylight still lights the stairwell. Minimum headroom improved from 2.26 m to 2.85 m.</p>
-          <p><strong>Cinematic tour.</strong> The Walk tab now has a Cinematic tour button (or press C). It walks an automatic, smooth route through all 23 stops with warmer lighting, a wider-lens look, letterbox bars and room captions, so you can screen-record it (Cmd + Shift + 5 on a Mac). The 3D model is also available as an OBJ file for Twinmotion, D5 Render, Lumion or Blender, for photo-real renders.</p>
-          <p><strong>Kept from B6.</strong> The rectangular batten main door and entrance gate, the enclosed glazed lounge with an L-shaped sofa and no TV, the window–TV–window living wall, the east-facing hob, and the sink on a slim island parallel to the counter.</p>
+          <p><strong>What changed in B10.</strong> The stair now climbs towards the west, the best Vastu direction, in the south of the plot. It is still one straight run per floor (17 risers with a rest landing midway), stacked directly above itself, so it takes only a single 1 m lane. You enter at the front through the main door in the auspicious west padas, walk along a locked entry hall beside the stair, and turn round onto the first step. You arrive at the front of each floor facing west and turn right (clockwise) into the room.</p>
+          <p>The laundry sits under the high end of the stair by the main door, with a cupboard under the rest landing and drawers under the low end. The overhead tank is back on the stair cabin in the roof's south-west corner.</p>
+          <p>To use the space well, bedroom 1 on the first floor now sleeps head-east with a 1.45 m wardrobe and loft along the north wall, which frees room for a proper living room with the TV between two north windows and a 1.6 m sofa. The second floor keeps the family lounge, the master suite, and the guest room / study with its ensuite.</p>
+          <p><strong>Interior palette.</strong> The walkthrough now uses the recommended warm Indian–Australian palette with an Italian touch: warm cream walls (#F3EBDD), ivory ceilings, one teak wood tone, cream terrazzo with sage and terracotta chips in shared spaces and on the stair, pale yellow oxide in the bedrooms, pale sage kitchen uppers, olive upholstery, a honed tan granite counter and bronze fittings. The full interior design, with flooring prices and a budget, is in the separate interior design doc.</p>
+          <p><strong>Latest change.</strong> The first-floor bathroom is now inside bedroom 1 (north-west corner, Vastu-preferred for toilets), and the bedroom shifted west into space the hall did not need. The living room grew from about 2.3 × 2.9 m to 3.3 × 2.9 m, enough for a 2.0 m three-seater, an armchair and a coffee table facing a 50" TV. Bedroom 1 now has a 4.5 ft double bed (head east) and opens onto the loggia; guests reach the bathroom through the bedroom. The stair sides are short rounded walls with a handrail on top instead of black grills.</p>
+          <p><strong>Cinematic tour.</strong> It starts by itself 3 seconds after the page has loaded. A "Tap for sound" button appears if your browser blocks sound; any key or click hands control back to you.</p>
         </div>
 
         <h3>1. Brief as now understood</h3>
         <ul>
           <li>Chikkalasandra, Bengaluru · A-khata · 20 × 40 ft (6.10 × 12.19 m, 74.3 m²) · west-facing, road on the west.</li>
-          <li>Stilt: parking, a short planted porch, and the main door at the front opening onto the stair. Laundry in the foyer, bike bay behind.</li>
-          <li>First floor: loggia, living room, pooja corner, open kitchen with an island sink, bedroom 2 and a common bathroom.</li>
-          <li>Second floor: an enclosed family lounge for everyone and a large master suite with an ensuite.</li>
-          <li>Roof: garden, drying deck, solar.</li>
-          <li>A U-turn stair at the front, stacked on every floor. Follow Hindu Vastu and make the structure sound.</li>
+          <li>Stilt: parking, a short planted porch, the main door at the front, a locked entry hall beside the stair. Laundry and storage under the stair.</li>
+          <li>First floor: loggia, bedroom 1 with its own bathroom, a bigger living room, open kitchen with an island sink, pooja corner.</li>
+          <li>Second floor: an enclosed family lounge for everyone, master suite, guest room / study with ensuite.</li>
+          <li>Roof: garden, laundry, solar.</li>
+          <li>One straight stair, no U or L turns, stacked on every floor. Best Vastu, space used efficiently, structure sound.</li>
         </ul>
 
         <h3>2. Vastu check</h3>
-        <p>A 20 × 40 west-facing plot with the stair in the south-west can't satisfy every rule at once. These are the main ones, and where each stands. A Vastu consultant may weigh some of them differently.</p>
+        <p>A 20 × 40 west-facing plot with the stair along the south side can't satisfy every rule at once. These are the main ones, and where each stands. A Vastu consultant may weigh some of them differently.</p>
         <div class="tbl"><table>
-          <thead><tr><th>Rule</th><th>B7</th><th>Status</th></tr></thead>
+          <thead><tr><th>Rule</th><th>B8</th><th>Status</th></tr></thead>
           <tbody>
             <tr><td>Main entrance in an auspicious west pada</td><td>Pedestrian gate and main door both sit in west padas 3–4 counted from the south-west (Sugriva, Pushpadanta).</td><td><span class="status s-ok">Meets</span></td></tr>
             <tr><td>Kitchen in the south-east (Agni), cook facing east</td><td>Kitchen in the east / south-east, with the hob on the east wall.</td><td><span class="status s-ok">Meets</span></td></tr>
-            <tr><td>Pooja in the north-east (Ishanya)</td><td>Open mandir unit in the first-floor north, just west of the north-east bedroom, idols facing west so you pray facing east. No toilet behind or above it.</td><td><span class="status s-warn">Mostly</span></td></tr>
-            <tr><td>Stairs in the south / west, climbing clockwise, odd number of steps</td><td>South-west corner, climbing east, turning south and back west: clockwise in plan. 17 risers per floor.</td><td><span class="status s-ok">Meets</span></td></tr>
-            <tr><td>Centre (Brahmasthan) open</td><td>The plot centre falls in open floor: the car porch, the living / pooja area and the upper hall. The stair core's north-east corner just touches the edge of the central zone, as stair air only, with no columns or plumbing.</td><td><span class="status s-warn">Mostly</span></td></tr>
+            <tr><td>Pooja in the north-east (Ishanya)</td><td>Open mandir corner in the first-floor north-east, idols facing west, no toilet nearby, kept open and light.</td><td><span class="status s-ok">Meets</span></td></tr>
+            <tr><td>Stairs in the south / west, climbing towards the west / south and turning clockwise, odd number of steps</td><td>Along the south wall, climbing east to west, 17 risers per floor. You arrive facing west and turn right (clockwise).</td><td><span class="status s-ok">Meets</span></td></tr>
+            <tr><td>Centre (Brahmasthan) open</td><td>No columns, toilets, stairs or plumbing at the centre on any floor. On the stilt it is open parking; on the first floor it falls between the foot of bedroom 1 and the living room; on the second floor in the master. Light furniture only there.</td><td><span class="status s-warn">Mostly</span></td></tr>
             <tr><td>Overhead tank south-west, sump north-east</td><td>Tank on the roof stair cabin in the south-west. Underground sump under the north-east end of the car porch.</td><td><span class="status s-ok">Meets</span></td></tr>
-            <tr><td>Heavier south-west, lighter north-east</td><td>Stair core, cabin and tank are in the south-west. The north-east holds light uses: bedroom 2 below, the master's open corner above, solar panels on the roof.</td><td><span class="status s-ok">Meets</span></td></tr>
+            <tr><td>Heavier south-west, lighter north-east</td><td>The stair, cabin and tank are in the south and south-west. On every floor the north-east holds only light uses: the pooja, a study, solar panels.</td><td><span class="status s-ok">Meets</span></td></tr>
             <tr><td>More openings to the north and east</td><td>North windows on every floor, plus an east kitchen window. The south wall is a party wall with none.</td><td><span class="status s-ok">Meets</span></td></tr>
-            <tr><td>Sleeping with the head south or east</td><td>Master: head east. Bedroom 2: head east.</td><td><span class="status s-ok">Meets</span></td></tr>
+            <tr><td>Sleeping with the head south or east</td><td>Bedroom 1: head east. Master: head south. Guest room: head east.</td><td><span class="status s-ok">Meets</span></td></tr>
             <tr><td>Parking north-west or south-east</td><td>Car parks in the north-west of the stilt.</td><td><span class="status s-ok">Meets</span></td></tr>
-            <tr><td>Toilets in the west / north-west, never north-east or south-west</td><td>The first-floor bathroom is north-west. The master ensuite is north-centre, a compromise. None are in the north-east, south-west or centre.</td><td><span class="status s-warn">Mostly</span></td></tr>
-            <tr><td>Master bedroom in the south-west</td><td>The stair takes the south-west and the front is the family lounge, so the master suite takes the rear (east) half of the second floor. The bed faces correctly (head east).</td><td><span class="status s-warn">Partly</span></td></tr>
-            <tr><td>Family / gathering space in the north, east or west</td><td>Second-floor family lounge on the west front, opening straight off the stair landing.</td><td><span class="status s-ok">Meets</span></td></tr>
-            <tr><td>No bedroom in the north-east</td><td>Bedroom 2 sits north-east on the first floor. Suggested for children or study use.</td><td><span class="status s-warn">Partly</span></td></tr>
+            <tr><td>Toilets in the west / north-west, never north-east or south-west</td><td>The first-floor bathroom and master ensuite are north-west. The guest ensuite is south-east. None are in the north-east, south-west or centre.</td><td><span class="status s-warn">Mostly</span></td></tr>
+            <tr><td>Master bedroom in the south-west</td><td>The stair takes the south and the west front is the family lounge, so the master sits towards the north-centre of the second floor. The bed faces correctly (head south).</td><td><span class="status s-warn">Partly</span></td></tr>
+            <tr><td>Family / gathering space in the north, east or west</td><td>Second-floor family lounge on the west front, with a reading nook in the north-west.</td><td><span class="status s-ok">Meets</span></td></tr>
+            <tr><td>No bedroom in the north-east</td><td>The north-east room on the second floor is a guest room / study; bedroom 1 is in the west-north of the first floor.</td><td><span class="status s-ok">Mostly</span></td></tr>
             <tr><td>Car gate in a good pada</td><td>The 3.2 m car gate spans padas 5–8. Vastu is usually stricter about the main door than the vehicle gate.</td><td><span class="status s-warn">Note</span></td></tr>
           </tbody>
         </table></div>
@@ -314,7 +323,7 @@ body.cine #cineCap{display:block;position:absolute;left:max(6%,16px);bottom:calc
             <tr><td>Frame</td><td>RCC frame: 8 columns about 230 × 380 mm, in two rows (north and south walls) at about 3.7 m spacing, running unbroken from footing to roof.</td><td>No floating columns. Every column stacks straight down. Shown on all four plans.</td></tr>
             <tr><td>Beams and slabs</td><td>Cross beams about 230 × 450–500 mm spanning the 5.4 m width at each column line. 150 mm two-way slabs. Edge beams around the stair opening.</td><td>The car porch and open first floor stay free of middle columns.</td></tr>
             <tr><td>Foundations</td><td>Isolated footings for the north row. Combined or strap footings for the south row, because those columns sit on the boundary and can't spread onto the neighbour's land.</td><td>Eccentric boundary footings are the usual cause of tilting and cracks on narrow plots if not tied back.</td></tr>
-            <tr><td>Stairs</td><td>A stacked dog-leg core: RCC waist-slab flights spanning from floor beams to half-landing beams, with a 115–150 mm RCC spine wall between the flights and an RCC wall on the east side of the core.</td><td>Every storey repeats the same geometry, so formwork can be reused. The core walls also stiffen the stilt floor against sway.</td></tr>
+            <tr><td>Stairs</td><td>RCC waist-slab flights spanning between floor and rest-landing beams, carried by the south-wall columns and a 115–150 mm RCC spine wall between the two stair lanes.</td><td>Each flight has the same geometry, so formwork can be reused.</td></tr>
             <tr><td>Walls</td><td>230 mm outer walls. Light AAC-block or drywall partitions wherever a wall above does not sit on a wall or beam below, for example the second-floor ensuite walls.</td><td>Keeps point loads off slabs and avoids slab cracking.</td></tr>
             <tr><td>Roof garden</td><td>Design the roof slab for an extra 3–4 kN/m² of soil, plus a root-barrier waterproofing membrane, a protection screed, drainage cells and two outlets. Raised planters sit on beam lines.</td><td>Leaks and overloading are the common roof-garden failures.</td></tr>
             <tr><td>Codes and materials</td><td>IS 456 and IS 875 loads, IS 1893 (Bengaluru is seismic zone II) with IS 13920 detailing for the stilt floor, M25 concrete, Fe 500D/550D steel, a plinth beam, damp-proof course, anti-termite treatment and 40 mm cover at the plinth.</td><td>Stilt floors are the soft storey in an earthquake, so columns need proper ductile detailing.</td></tr>
@@ -324,56 +333,56 @@ body.cine #cineCap{display:block;position:absolute;left:max(6%,16px);bottom:calc
 
         <h3>4. Site and regulatory assumptions</h3>
         <div class="tbl"><table>
-          <thead><tr><th>Item</th><th>B7 uses</th><th>Status</th><th>Basis</th></tr></thead>
+          <thead><tr><th>Item</th><th>B8 uses</th><th>Status</th><th>Basis</th></tr></thead>
           <tbody>
             <tr><td>Setbacks</td><td class="n">0.90 front · 0.70 north · 0.70 rear · 0 south</td><td><span class="status s-warn">Provisional</span></td><td>Published summaries of the Jan 2026 GBA notification disagree for this plot size. If both sides need 0.6 m, every floor loses 0.6 m of width.</td></tr>
             <tr><td>FAR</td><td class="n">1.54 of 1.75</td><td><span class="status s-ok">Within</span></td><td>2 × 57.1 m². If the enclosed foyer, stair and store at stilt level count, about 1.69.</td></tr>
             <tr><td>Ground coverage</td><td class="n">76.9%</td><td><span class="status s-bad">Check</span></td><td>A cap of 65–75% may apply. Making the loggias uncovered would bring it down.</td></tr>
             <tr><td>Height</td><td class="n">≈ 7.3 m above stilt to parapet</td><td><span class="status s-ok">Within</span></td><td>12 m limit excluding the stilt.</td></tr>
-            <tr><td>Stairs</td><td class="n">185 mm riser · 250 mm tread · 1.0 m wide</td><td><span class="status s-ok">Meets</span></td><td>Riser ≤ 190 mm and tread ≥ 250 mm. Minimum headroom 2.85 m.</td></tr>
-            <tr><td>Stilt use</td><td>Parking + bike bay + foyer + stair + laundry + store</td><td><span class="status s-warn">To confirm</span></td><td>Stilt floors are for parking. The store and the laundry nook need confirming.</td></tr>
+            <tr><td>Stairs</td><td class="n">185 mm riser · 250 mm tread · 1.0 m wide</td><td><span class="status s-ok">Meets</span></td><td>Riser ≤ 190 mm and tread ≥ 250 mm. Minimum headroom 2.26 m.</td></tr>
+            <tr><td>Stilt use</td><td>Parking + foyer + stair + laundry + storage + store</td><td><span class="status s-warn">To confirm</span></td><td>Stilt floors are for parking. The store, laundry and storage under the stair need confirming.</td></tr>
           </tbody>
         </table></div>
 
         <h3>5. Compromises to accept or reject</h3>
         <ul>
-          <li><strong>Bedroom 2 is compact</strong> (about 8.7 m²) and shares the common bathroom at the front of the first floor, about 6 m away. It has a queen bed and a 1.6 m wardrobe with a loft.</li>
-          <li><strong>The study / guest room is gone.</strong> The second-floor lounge or the master's writing desk can take its place.</li>
-          <li><strong>The kitchen is a little smaller</strong> (about 9.8 m²) because bedroom 2 took the north-east of the first floor. It keeps the island sink, east-facing hob, pantry and fridge.</li>
-          <li><strong>The master ensuite is in the north-centre</strong>, a Vastu compromise. The front now holds the lounge and stair.</li>
-          <li><strong>The lounge glass faces west.</strong> Use low-e glass, openable panes and blinds or bamboo chiks so it doesn't overheat on summer afternoons.</li>
+          <li><strong>You walk about 5 m to the stair foot</strong>, along the locked entry hall on the ground floor and the hall on each floor above. That is the price of a single straight, west-climbing, stacked stair; it saves about 5 m² per floor over two side-by-side flights.</li>
+          <li><strong>Bedroom 1 is compact</strong>, with a 4.5 ft double bed (head east), and the first floor's only bathroom is inside it, so guests go through the bedroom.</li>
+          <li><strong>The master bedroom is about 9.3 m²</strong> and sits towards the north-centre, not the south-west.</li>
+          <li><strong>The guest ensuite is in the south-east</strong>, a Vastu compromise.</li>
+          <li><strong>The lounge glass faces west.</strong> Use low-e glass, openable panes and blinds or bamboo chiks.</li>
           <li><strong>Ground coverage may exceed a cap.</strong> See section 4.</li>
         </ul>
 
-        <h3>Verification of the B7 blockout</h3>
+        <h3>Verification of the B10 blockout</h3>
         <div class="tbl"><table>
           <thead><tr><th>Check</th><th>Result</th><th>Note</th></tr></thead>
           <tbody>
-            <tr><td>All 26 zones reachable from the road, through the main door and up all three U-turn flights</td><td><span class="status s-ok">Pass</span></td><td>Including the laundry nook, bike bay, bedroom 2, the family lounge, the master suite and the roof (+9.45 m).</td></tr>
+            <tr><td>All 29 zones reachable from the road, through the main door and up all three flights</td><td><span class="status s-ok">Pass</span></td><td>Including the laundry under the stair, bedroom 1, the guest room, the lounge and the roof (+9.45 m).</td></tr>
             <tr><td>Same test at 600 mm comfortable clearance</td><td><span class="status s-ok">Pass</span></td><td>All zones.</td></tr>
-            <tr><td>Unguarded drops (stair edges, stairwell, roof)</td><td><span class="status s-ok">None</span></td><td>Every open edge has a baluster screen, a rail or a wall.</td></tr>
+            <tr><td>Unguarded drops (stair edges, stairwell, roof)</td><td><span class="status s-ok">None</span></td><td>Every open edge has a baluster screen, a glass screen or a wall.</td></tr>
             <tr><td>Furniture overlapping walls, door leaves or other furniture</td><td><span class="status s-ok">None</span></td><td>All solid items checked in 3D.</td></tr>
-            <tr><td>Stair headroom</td><td><span class="status s-ok">2.85 m min</span></td><td>The flights stack exactly, so every flight has the full storey above it.</td></tr>
-            <tr><td>Cinematic route</td><td><span class="status s-ok">Pass</span></td><td>96 m route through all 23 stops, computed with the same collision rules as the walk. No point passes through a wall or furniture.</td></tr>
+            <tr><td>Stair headroom</td><td><span class="status s-ok">2.26 m min</span></td><td>Over the lowest treads, where the floor above starts. Above 2.1 m everywhere.</td></tr>
           </tbody>
         </table></div>
 
         <h3>Palette</h3>
         <div class="chips">
-          <span class="chip"><i style="background:#EEECE6"></i>White render</span>
-          <span class="chip"><i style="background:#6E4428"></i>Walnut</span>
-          <span class="chip"><i style="background:#F2F1EE"></i>Handleless white</span>
-          <span class="chip"><i style="background:#C9C3B7"></i>Stone-look porcelain</span>
-          <span class="chip"><i style="background:linear-gradient(45deg,#1d1d1b 25%,#f3f1ec 25%,#f3f1ec 50%,#1d1d1b 50%,#1d1d1b 75%,#f3f1ec 75%);background-size:10px 10px"></i>Checkerboard entry</span>
-          <span class="chip"><i style="background:#22221E"></i>Black steel</span>
-          <span class="chip"><i style="background:#A9BF97"></i>Green oxide</span>
+          <span class="chip"><i style="background:#F3EBDD"></i>Warm cream walls</span>
+          <span class="chip"><i style="background:#F7F4EC"></i>Ivory ceilings</span>
+          <span class="chip"><i style="background:#8B5E34"></i>Teak</span>
+          <span class="chip"><i style="background:#E8E0D0"></i>Terrazzo</span>
+          <span class="chip"><i style="background:#E3D3A0"></i>Pale yellow oxide</span>
+          <span class="chip"><i style="background:#DDE5B6"></i>Pale sage</span>
+          <span class="chip"><i style="background:#A5A77B"></i>Muted olive</span>
           <span class="chip"><i style="background:#B4593A"></i>Terracotta</span>
-          <span class="chip"><i style="background:#9DB19A"></i>Sage</span>
+          <span class="chip"><i style="background:#6B5A45"></i>Dark bronze</span>
+          <span class="chip"><i style="background:#22221E"></i>Black steel frames</span>
         </div>
 
         <h3>What I need from you</h3>
         <ul>
-          <li>Approve B7 or tell me what to change. In particular, is it fine for bedroom 2 to share the front bathroom on the first floor?</li>
+          <li>Approve B10 or tell me what to change.</li>
           <li>Your car model, so the bay and tandem space can be confirmed.</li>
           <li>Any site photos or a survey.</li>
         </ul>
