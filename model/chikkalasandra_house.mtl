@@ -1,0 +1,265 @@
+# Chikkalasandra House materials
+
+newmtl render
+Ka 0 0 0
+Kd 0.930 0.925 0.900
+Ks 0.04 0.04 0.04
+Ns 10
+d 1
+illum 2
+
+newmtl wall_interior
+Ka 0 0 0
+Kd 0.950 0.937 0.910
+Ks 0.04 0.04 0.04
+Ns 10
+d 1
+illum 2
+
+newmtl slab
+Ka 0 0 0
+Kd 0.910 0.900 0.875
+Ks 0.04 0.04 0.04
+Ns 10
+d 1
+illum 2
+
+newmtl glass
+Ka 0 0 0
+Kd 0.740 0.820 0.830
+Ks 0.04 0.04 0.04
+Ns 200
+d 0.3
+illum 4
+
+newmtl walnut
+Ka 0 0 0
+Kd 0.430 0.270 0.160
+Ks 0.04 0.04 0.04
+Ns 60
+d 1
+illum 2
+
+newmtl white_lacquer
+Ka 0 0 0
+Kd 0.950 0.945 0.935
+Ks 0.04 0.04 0.04
+Ns 120
+d 1
+illum 2
+
+newmtl quartz
+Ka 0 0 0
+Kd 0.957 0.953 0.940
+Ks 0.04 0.04 0.04
+Ns 160
+d 1
+illum 2
+
+newmtl sage
+Ka 0 0 0
+Kd 0.620 0.690 0.600
+Ks 0.04 0.04 0.04
+Ns 40
+d 1
+illum 2
+
+newmtl linen
+Ka 0 0 0
+Kd 0.910 0.880 0.830
+Ks 0.04 0.04 0.04
+Ns 5
+d 1
+illum 2
+
+newmtl cane
+Ka 0 0 0
+Kd 0.780 0.640 0.420
+Ks 0.04 0.04 0.04
+Ns 20
+d 1
+illum 2
+
+newmtl black_steel
+Ka 0 0 0
+Kd 0.130 0.130 0.120
+Ks 0.04 0.04 0.04
+Ns 90
+d 1
+illum 2
+
+newmtl steel
+Ka 0 0 0
+Kd 0.720 0.725 0.705
+Ks 0.04 0.04 0.04
+Ns 150
+d 1
+illum 2
+
+newmtl ceramic
+Ka 0 0 0
+Kd 0.965 0.960 0.945
+Ks 0.04 0.04 0.04
+Ns 200
+d 1
+illum 2
+
+newmtl terracotta
+Ka 0 0 0
+Kd 0.710 0.350 0.230
+Ks 0.04 0.04 0.04
+Ns 10
+d 1
+illum 2
+
+newmtl stone
+Ka 0 0 0
+Kd 0.780 0.750 0.690
+Ks 0.04 0.04 0.04
+Ns 30
+d 1
+illum 2
+
+newmtl stair_tread
+Ka 0 0 0
+Kd 0.820 0.800 0.750
+Ks 0.04 0.04 0.04
+Ns 40
+d 1
+illum 2
+
+newmtl car_paint
+Ka 0 0 0
+Kd 0.420 0.500 0.550
+Ks 0.04 0.04 0.04
+Ns 150
+d 1
+illum 2
+
+newmtl planting
+Ka 0 0 0
+Kd 0.380 0.500 0.270
+Ks 0.04 0.04 0.04
+Ns 5
+d 1
+illum 2
+
+newmtl solar
+Ka 0 0 0
+Kd 0.110 0.160 0.230
+Ks 0.04 0.04 0.04
+Ns 150
+d 1
+illum 2
+
+newmtl floor_stone
+Ka 0 0 0
+Kd 0.800 0.780 0.730
+Ks 0.04 0.04 0.04
+Ns 60
+d 1
+illum 2
+
+newmtl floor_oxide
+Ka 0 0 0
+Kd 0.660 0.750 0.590
+Ks 0.04 0.04 0.04
+Ns 80
+d 1
+illum 2
+
+newmtl floor_terracotta
+Ka 0 0 0
+Kd 0.720 0.390 0.250
+Ks 0.04 0.04 0.04
+Ns 15
+d 1
+illum 2
+
+newmtl floor_wet
+Ka 0 0 0
+Kd 0.830 0.830 0.800
+Ks 0.04 0.04 0.04
+Ns 40
+d 1
+illum 2
+
+newmtl floor_wet_dark
+Ka 0 0 0
+Kd 0.660 0.670 0.640
+Ks 0.04 0.04 0.04
+Ns 40
+d 1
+illum 2
+
+newmtl floor_checker
+Ka 0 0 0
+Kd 0.550 0.550 0.530
+Ks 0.04 0.04 0.04
+Ns 80
+d 1
+illum 2
+
+newmtl floor_concrete
+Ka 0 0 0
+Kd 0.650 0.640 0.610
+Ks 0.04 0.04 0.04
+Ns 10
+d 1
+illum 2
+
+newmtl lawn
+Ka 0 0 0
+Kd 0.440 0.560 0.280
+Ks 0.04 0.04 0.04
+Ns 5
+d 1
+illum 2
+
+newmtl rug
+Ka 0 0 0
+Kd 0.850 0.810 0.740
+Ks 0.04 0.04 0.04
+Ns 2
+d 1
+illum 2
+
+newmtl ground_grass
+Ka 0 0 0
+Kd 0.560 0.600 0.450
+Ks 0.04 0.04 0.04
+Ns 2
+d 1
+illum 2
+
+newmtl asphalt
+Ka 0 0 0
+Kd 0.330 0.340 0.350
+Ks 0.04 0.04 0.04
+Ns 5
+d 1
+illum 2
+
+newmtl neighbour
+Ka 0 0 0
+Kd 0.850 0.835 0.800
+Ks 0.04 0.04 0.04
+Ns 5
+d 1
+illum 2
+
+newmtl gate_timber
+Ka 0 0 0
+Kd 0.430 0.270 0.160
+Ks 0.04 0.04 0.04
+Ns 40
+d 1
+illum 2
+
+newmtl tree_trunk
+Ka 0 0 0
+Kd 0.430 0.350 0.280
+Ks 0.04 0.04 0.04
+Ns 5
+d 1
+illum 2

@@ -22,10 +22,10 @@ const PS = 56, POX = 150, POY = 70;
 const X = x => POX + x * PS, Z = z => POY + z * PS;
 const T = (x, y, t, cls, anchor = 'middle', extra = '') => `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" class="${cls}" text-anchor="${anchor}" ${extra}>${t}</text>`;
 const RC = (x1, x2, z1, z2, cls, extra = '') => `<rect x="${X(x1).toFixed(1)}" y="${Z(z1).toFixed(1)}" width="${((x2 - x1) * PS).toFixed(1)}" height="${((z2 - z1) * PS).toFixed(1)}" class="${cls}" ${extra}/>`;
-const onLevel = (lv, item) => item.lv === lv || (item.lv === -1 && (lv === 0 || item.id === 'CORE'));
-const LABEL_POS = { front: [0.45, 2.0], passage: [2.1, 4.25], carbay: [3.3, 3.12], stairs: [6.05, 5.2], foyer: [9.12, 5.55], store: [10.55, 4.25],
-  balc1: [1.72, 2.2], powder: [3.2, 1.75], study: [4.25, 2.55], hall1: [3.2, 3.9], living: [6.75, 2.75], kitchen: [10.0, 4.45], pooja: [10.55, 1.45], landing1: [9.05, 5.4],
-  lounge: [2.4, 4.45], nook: [1.72, 1.15], master: [5.65, 1.3], ensuite: [3.6, 2.2], hall2: [6.0, 4.4], bath2: [10.45, 5.15], bed2: [8.9, 1.5], roof: [3.6, 1.55], roofrear: [10.0, 4.4] };
+const onLevel = (lv, item) => item.lv === lv || (item.lv === -1 && (lv === 0 || String(item.id).startsWith('CORE')));
+const LABEL_POS = { front: [0.45, 2.0], passage: [1.65, 4.9], carbay: [3.3, 3.12], foyer: [3.2, 5.6], laundry: [4.62, 5.78], bikebay: [8.3, 3.95], store: [10.55, 4.25],
+  balc1: [1.72, 2.2], powder: [3.3, 1.95], hall1: [3.17, 3.1], living: [5.55, 3.4], kitchen: [8.1, 4.4], pooja: [7.35, 2.6], bed2: [8.85, 2.4],
+  lounge: [2.6, 3.1], nook: [1.8, 5.75], master: [8.3, 3.7], ensuite: [6.1, 2.25], hall2: [5.7, 3.1], cabin: [3.17, 5.3], roof: [3.4, 1.3], roofrear: [9.6, 4.4] };
 function planSvg(lv) {
   const W = POX + 12.6 * PS + 40, H = POY + 6.3 * PS + 40;
   let s = `<defs><pattern id="chk${lv}" width="16.8" height="16.8" patternUnits="userSpaceOnUse"><rect width="16.8" height="16.8" fill="var(--panel)"/><rect width="8.4" height="8.4" fill="var(--line)"/><rect x="8.4" y="8.4" width="8.4" height="8.4" fill="var(--line)"/></pattern><marker id="ah${lv}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--ink)"/></marker></defs>`;
@@ -43,9 +43,9 @@ function planSvg(lv) {
     if ((rel > 0 && rel <= 1.6) || (rel <= 0 && rel > -1.6)) s += RC(d.x1, d.x2, d.z1, d.z2, 'pl-step');
     else if (rel > 1.6 && rel < 3.15) s += RC(d.x1, d.x2, d.z1, d.z2, 'pl-step', 'stroke-dasharray="2 2"');
   }
-  const SL = P.stairLane, sp = P.spirals[0];
-  if (lv < 3) s += `<path d="M${X(SL.x2 - .1)} ${Z(5.37)} H${X(SL.x1 + .15)}" class="pl-arrow" marker-end="url(#ah${lv})"/>` + T(X(7.6), Z(5.25), 'UP', 'pl-small');
-  if (lv >= 1) s += T(X(4.3), Z(5.25), 'DN', 'pl-small');
+  const SL = P.stairLane, sp = P.spirals[0], ST = P.stair;
+  if (ST && lv < 3) s += `<path d="M${ST.arrow.map(([x, z]) => `${X(x).toFixed(1)} ${Z(z).toFixed(1)}`).join(' L')}" class="pl-arrow" fill="none" marker-end="url(#ah${lv})"/>` + T(X(ST.up[0]), Z(ST.up[1]), 'UP', 'pl-small');
+  if (ST && lv >= 1) s += T(X(ST.dn[0]), Z(ST.dn[1]), 'DN', 'pl-small');
   if (lv >= 1 && sp) {
     const cx = X(sp.cx), cy = Z(sp.cz), R = sp.rOut * PS;
     s += `<circle cx="${cx}" cy="${cy}" r="${R}" class="pl-step"/><circle cx="${cx}" cy="${cy}" r="${sp.rIn * PS}" class="pl-wall"/>`;
@@ -63,10 +63,10 @@ function planSvg(lv) {
     if (f.shape === 'counterE' && f.sink) s += `<rect x="${X(f.x1 + .08).toFixed(1)}" y="${Z(f.sink[0]).toFixed(1)}" width="${(f.x2 - f.x1 - .18) * PS}" height="${(f.sink[1] - f.sink[0]) * PS}" rx="4" class="pl-swing" style="stroke-dasharray:none"/>` + T(X(f.x1) - 4, Z((f.sink[0] + f.sink[1]) / 2) + 3, 'SINK 2', 'pl-small', 'end');
     if (f.shape === 'counterE') { const cx = X((f.x1 + f.x2) / 2); for (const zz of [f.hob[0] + .15, f.hob[1] - .15]) s += `<circle cx="${cx}" cy="${Z(zz)}" r="6" class="pl-swing" style="stroke-dasharray:none"/>`; s += T(cx - 12, Z((f.hob[0] + f.hob[1]) / 2) + 3, 'HOB', 'pl-small', 'end'); }
   }
-  if (lv === 0) s += T(X(3.3), Z(1.95), 'CAR 4.00 × 1.75', 'pl-small') + T(X(7.0), Z(1.42), 'BIKE', 'pl-small') + RC(5.6, 10.9, 0.98, 3.35, 'pl-vehicle', 'rx="2" opacity=".55"') + T(X(8.25), Z(2.95), '2ND CAR (TANDEM) / WORKSHOP', 'pl-small');
+  if (lv === 0) s += T(X(3.3), Z(1.95), 'CAR 4.00 × 1.75', 'pl-small') + T(X(8.3), Z(4.82), 'BIKE', 'pl-small') + RC(5.6, 10.9, 0.98, 3.35, 'pl-vehicle', 'rx="2" opacity=".55"') + T(X(8.25), Z(2.25), '2ND CAR (TANDEM)', 'pl-small');
   for (const w of P.walls.filter(w => onLevel(lv, w))) {
     const alongX = w.axis === 'x', lo = alongX ? w.x1 : w.z1, hi = alongX ? w.x2 : w.z2;
-    const cls = w.kind === 'compound' || w.kind === 'parapet' ? 'pl-cwall' : w.kind === 'rail' ? 'pl-rail' : w.kind === 'screen' ? 'pl-win' : 'pl-wall';
+    const cls = w.kind === 'compound' || w.kind === 'parapet' ? 'pl-cwall' : w.kind === 'rail' || w.kind === 'sguard' ? 'pl-rail' : w.kind === 'screen' ? 'pl-win' : 'pl-wall';
     const piece = (a, b, c) => alongX ? RC(a, b, w.z1, w.z2, c) : RC(w.x1, w.x2, a, b, c);
     const mid = alongX ? (w.z1 + w.z2) / 2 : (w.x1 + w.x2) / 2;
     let cur = lo;
@@ -89,14 +89,15 @@ function planSvg(lv) {
   }
   for (const c of (P.columns || [])) s += RC(c.x1, c.x2, c.z1, c.z2, 'pl-col');
   for (const r of P.rooms.filter(r => (r.lv === lv || (lv === 0 && r.lv === -1)) && LABEL_POS[r.id])) {
-    if ((r.id === 'stairs' && lv !== 0) || (r.id === 'spiral' && lv === 0)) continue;
+    if (r.id === 'stairs' || r.id === 'spiral') continue;
     const [lx, lz] = LABEL_POS[r.id], w = r.x2 - r.x1, d = r.z2 - r.z1;
     if (r.id === 'front') { s += T(X(lx), Z(4.45), 'FRONT GARDEN', 'pl-small', 'middle', `transform="rotate(-90 ${X(lx)} ${Z(4.45)})"`); continue; }
     s += T(X(lx), Z(lz), r.short, 'pl-label');
-    if (!['front', 'stairs', 'spiral', 'hall2', 'hall1', 'passage', 'landing1', 'kitchen', 'pooja', 'powder', 'ensuite'].includes(r.id)) s += T(X(lx), Z(lz) + 13, `${w.toFixed(2)} × ${d.toFixed(2)}`, 'pl-dim');
+    if (!['front', 'stairs', 'spiral', 'hall2', 'hall1', 'passage', 'landing1', 'kitchen', 'pooja', 'powder', 'ensuite', 'laundry', 'cabin', 'nook', 'foyer'].includes(r.id)) s += T(X(lx), Z(lz) + 13, `${w.toFixed(2)} × ${d.toFixed(2)}`, 'pl-dim');
   }
-  if (lv === 3) s += T(X(5.0), Z(4.62), 'STAIR CABIN · TANK OVER', 'pl-small') + T(X(9.8), Z(1.15), 'SOLAR OVER DRYING DECK', 'pl-small');
-  const chain = lv === 0 ? [0, 0.9, 3.8, 8.55, 11.49, 12.192] : lv === 3 ? [0.9, 2.4, 7.665, 11.49] : lv === 1 ? [0.9, 2.4, 3.85, 5.715, 8.0, 11.49] : [0.9, 4.1, 7.53, 9.55, 11.49];
+  if (lv === 3) s += T(X(5.3), Z(3.45), 'STAIR CABIN · TANK + SKYLIGHT OVER', 'pl-small') + T(X(9.8), Z(1.15), 'SOLAR OVER DRYING DECK', 'pl-small');
+  if (lv === 0) s += T(X(5.3), Z(3.5), 'GLASS SCREEN', 'pl-small');
+  const chain = lv === 0 ? [0, 0.9, 2.4, 3.8, 6.915, 9.8, 11.49, 12.192] : lv === 3 ? [0.9, 2.4, 6.915, 11.49] : lv === 1 ? [0.9, 2.4, 4.2, 6.8, 8.0, 11.49] : [0.9, 2.4, 4.6, 6.915, 11.49];
   const yT = POY - 30;
   s += `<line x1="${X(chain[0])}" y1="${yT}" x2="${X(chain[chain.length - 1])}" y2="${yT}" class="pl-dline"/>`;
   chain.forEach((v, i) => { s += `<line x1="${X(v)}" y1="${yT - 5}" x2="${X(v)}" y2="${yT + 5}" class="pl-dline"/>`; if (i) { const a = chain[i - 1]; s += T(X((a + v) / 2), yT - 6, (v - a).toFixed(2), 'pl-dim'); } });
@@ -111,8 +112,9 @@ function buildElevation() {
   const ES = 44, OX = 40, base = 620, ex = z => OX + z * ES, ey = y => base - y * ES;
   const Wd = OX * 2 + 6.4 * ES, H = base + 40, yTop = P.levels[3];
   let s = `<rect x="0" y="0" width="${Wd + 120}" height="${H}" class="el-sky"/>`;
-  s += `<rect x="${ex(4.751)}" y="${ey(yTop + 2.55)}" width="${(6.096 - 4.751) * ES}" height="${2.55 * ES}" class="el-back"/>`;
-  s += `<rect x="${ex(4.8)}" y="${ey(yTop + 2.7 + 1.3)}" width="${1.2 * ES}" height="${1.3 * ES}" class="el-back"/>`;
+  s += `<rect x="${ex(3.635)}" y="${ey(yTop + 2.55)}" width="${(6.096 - 3.635) * ES}" height="${2.55 * ES}" class="el-back"/>`;
+  s += `<rect x="${ex(4.3)}" y="${ey(yTop + 2.1)}" width="${1.0 * ES}" height="${1.1 * ES}" class="el-glass"/>`;
+  s += `<rect x="${ex(4.7)}" y="${ey(yTop + 2.7 + 1.3)}" width="${1.1 * ES}" height="${1.3 * ES}" class="el-back"/>`;
   s += `<rect x="${ex(0.7)}" y="${ey(yTop + 1.0)}" width="${(6.096 - 0.7) * ES}" height="${(yTop + 1.0) * ES}" class="el-render"/>`;
   s += `<rect x="${ex(0.93)}" y="${ey(3.0)}" width="${(5.866 - 0.93) * ES}" height="${3.0 * ES}" class="el-void"/>`;
   for (const lv of [1, 2]) {
@@ -125,8 +127,8 @@ function buildElevation() {
       s += `<rect x="${ex(a)}" y="${ey(y0 + (lv === 2 ? .45 : 1.05))}" width="${(b - a) * ES}" height="${(lv === 2 ? .45 : 1.05) * ES}" class="el-render"/>`;
     }
   }
-  s += `<rect x="${ex(1.7)}" y="${ey(yTop + 2.8)}" width="${3.32 * ES}" height="${0.2 * ES}" class="el-wood"/>`;
-  for (const z of [1.7, 4.9]) s += `<rect x="${ex(z)}" y="${ey(yTop + 2.6)}" width="${.12 * ES}" height="${1.6 * ES}" class="el-wood"/>`;
+  s += `<rect x="${ex(1.5)}" y="${ey(yTop + 2.8)}" width="${2.05 * ES}" height="${0.2 * ES}" class="el-wood"/>`;
+  for (const z of [1.6, 3.33]) s += `<rect x="${ex(z)}" y="${ey(yTop + 2.6)}" width="${.12 * ES}" height="${1.6 * ES}" class="el-wood"/>`;
   s += `<path d="M${ex(-0.15)} ${ey(-0.15)} V${ey(2.7)} H${ex(6.246)} V${ey(-0.15)} Z" class="el-render"/>`;
   s += `<rect x="${ex(0.15)}" y="${ey(2.15)}" width="${3.2 * ES}" height="${2.3 * ES}" class="el-gate"/>`;
   for (let z = 0.18; z < 3.33; z += 0.075) s += `<line x1="${ex(z)}" y1="${ey(-0.1)}" x2="${ex(z)}" y2="${ey(2.15)}" class="el-batten"/>`;
@@ -140,9 +142,9 @@ function buildElevation() {
   const svg = document.getElementById('elevSvg'); svg.setAttribute('viewBox', `0 0 ${Wd + 120} ${H}`); svg.style.minWidth = '440px'; svg.style.maxWidth = '640px'; svg.innerHTML = s;
 }
 function buildTables() {
-  const order = [[0, ['passage', 'foyer', 'store', 'carbay']], [1, ['balc1', 'hall1', 'powder', 'study', 'living', 'kitchen', 'pooja']], [2, ['lounge', 'nook', 'master', 'ensuite', 'hall2', 'bed2', 'bath2']], [3, ['roof', 'roofrear']]];
+  const order = [[0, ['passage', 'foyer', 'laundry', 'carbay', 'bikebay', 'store']], [1, ['balc1', 'powder', 'living', 'pooja', 'kitchen', 'bed2']], [2, ['lounge', 'nook', 'ensuite', 'master']], [3, ['roof', 'roofrear']]];
   const floorName = ['Stilt', 'First floor', 'Second floor', 'Roof'];
-  const fl = { lounge: 'Terracotta + oxide', nook: 'Terracotta', hall1: 'Stone-look porcelain', powder: 'Anti-skid tile', study: 'Green oxide', pooja: 'Green oxide', balc1: 'Terracotta', balc2: 'Terracotta', living: 'Stone-look porcelain', kitchen: 'Stone-look porcelain', hall2: 'Stone-look porcelain', bath1: 'Anti-skid tile', bath2: 'Anti-skid tile', ensuite: 'Anti-skid tile', bed1: 'Green oxide', bed2: 'Green oxide', master: 'Green oxide', roof: 'Terracotta + lawn', roofrear: 'Terracotta', passage: 'Checkerboard marble', foyer: 'Checkerboard marble', landing1: 'Stone-look porcelain', store: 'Concrete', carbay: 'Concrete pavers' };
+  const fl = { lounge: 'Terracotta + oxide', nook: 'Terracotta', hall1: 'Stone-look porcelain', powder: 'Anti-skid tile', study: 'Green oxide', pooja: 'Stone-look porcelain', balc1: 'Terracotta', balc2: 'Terracotta', living: 'Stone-look porcelain', kitchen: 'Stone-look porcelain', hall2: 'Stone-look porcelain', bath1: 'Anti-skid tile', bath2: 'Anti-skid tile', ensuite: 'Anti-skid tile', bed1: 'Green oxide', bed2: 'Green oxide', master: 'Green oxide', roof: 'Terracotta + lawn', roofrear: 'Terracotta', passage: 'Checkerboard marble', foyer: 'Checkerboard marble', landing1: 'Stone-look porcelain', store: 'Concrete', carbay: 'Concrete pavers', laundry: 'Checkerboard marble', bikebay: 'Concrete', cabin: 'Stone-look porcelain' };
   let rows = '';
   for (const [lv, ids] of order) {
     rows += `<tr class="sub"><td colspan="6">${floorName[lv]}</td></tr>`;
@@ -152,9 +154,9 @@ function buildTables() {
   const fp = P.footprint, foot = (fp.x2 - fp.x1) * (fp.z2 - fp.z1), plot = P.plot.depth * P.plot.width;
   rows += `<tr class="sub"><td>Built-up, first + second floors</td><td></td><td></td><td class="n">${(2 * foot).toFixed(1)} m²</td><td class="n">${(2 * foot * 10.764).toFixed(0)} sq ft</td><td>FAR ${(2 * foot / plot).toFixed(2)} of 1.75 · stilt and stair cabin excluded</td></tr>`;
   document.getElementById('areaTable').innerHTML = `<thead><tr><th>Room</th><th>Clear size</th><th>Feet</th><th>Area</th><th></th><th>Floor finish</th></tr></thead><tbody>${rows}</tbody>`;
-  document.getElementById('kpis').innerHTML = `<div><b>${(2 * foot).toFixed(1)} m²</b><span>built-up on two floors (${(2 * foot * 10.764).toFixed(0)} sq ft)</span></div><div><b>${(2 * foot / plot).toFixed(2)}</b><span>FAR used of 1.75</span></div><div><b>${(100 * foot / plot).toFixed(0)}%</b><span>ground coverage (check cap)</span></div><div><b>3 + 3</b><span>bedrooms, each with an ensuite</span></div><div><b>${P.rooms.length} / ${P.rooms.length}</b><span>zones reached in walk test</span></div>`;
+  document.getElementById('kpis').innerHTML = `<div><b>${(2 * foot).toFixed(1)} m²</b><span>built-up on two floors (${(2 * foot * 10.764).toFixed(0)} sq ft)</span></div><div><b>${(2 * foot / plot).toFixed(2)}</b><span>FAR used of 1.75</span></div><div><b>${(100 * foot / plot).toFixed(0)}%</b><span>ground coverage (check cap)</span></div><div><b>2 + lounge</b><span>bedrooms, plus the family lounge</span></div><div><b>${P.rooms.length} / ${P.rooms.length}</b><span>zones reached in walk test</span></div>`;
   let dr = '';
-  const lvName = w => w.lv === -1 ? (w.id === 'CORE' ? 'All floors' : 'Boundary') : floorName[w.lv];
+  const lvName = w => w.lv === -1 ? (w.id.startsWith('CORE') ? 'All floors' : 'Boundary') : floorName[w.lv];
   for (const w of P.walls) for (const o of (w.open || [])) {
     const h = o.type === 'window' ? `sill ${o.sill.toFixed(2)} · head ${o.head.toFixed(2)}` : o.type === 'arch' ? (o.par ? `parapet ${o.par.toFixed(2)} · springs ${o.spring.toFixed(2)}` : `springs ${o.spring.toFixed(2)}`) : o.type === 'gate' ? `height ${o.rel_h.toFixed(2)}` : o.slide ? 'head 2.60' : 'head 2.10';
     dr += `<tr><td>${o.label}</td><td class="n">${(o.b - o.a).toFixed(2)} m</td><td class="n">${ftIn(o.b - o.a)}</td><td class="n">${h}</td><td>${lvName(w)}</td></tr>`;
@@ -163,7 +165,7 @@ function buildTables() {
 }
 {
   const host = document.getElementById('plans'); let html = '';
-  const titles = ['Stilt floor · ±0.00: parking, entry passage, stair', 'First floor · +3.15: loggia, living, kitchen + island, bedroom', 'Second floor · +6.30: master suite, bedroom 2, loggia', 'Roof · +9.45: garden, laundry, solar'];
+  const titles = ['Stilt floor · ±0.00: parking, porch, foyer, U-turn stair, laundry', 'First floor · +3.15: loggia, living, pooja, kitchen + island, bedroom 2, bath', 'Second floor · +6.30: family lounge, master suite', 'Roof · +9.45: garden, stair cabin, solar, drying'];
   for (let lv = 0; lv < 4; lv++) { const { svg, W, H } = planSvg(lv); html += `<h3>${titles[lv]}</h3><div class="svgbox"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${titles[lv]}">${svg}</svg></div>`; }
   host.innerHTML = html;
   buildElevation(); buildTables();
@@ -348,11 +350,13 @@ function rod(a, b, r, m) {
 }
 for (const w of P.walls) {
   if (w.kind === 'screen') { steelFrame(true, w, w.x1, w.x2, w.y0, w.y1, true); continue; }
+  if (w.kind === 'sguard') continue;   // collision only: the stair balusters are drawn from P.stair
   if (w.kind === 'rail') {   // open balustrade: black-steel balusters, timber handrail
-    const zc = (w.z1 + w.z2) / 2, top = w.y1;
-    for (let x = w.x1 + .05; x < w.x2; x += .11) box(x - .009, x + .009, w.y0, top - .05, zc - .009, zc + .009, M.black, false);
-    box(w.x1, w.x2, w.y0, w.y0 + .04, zc - .02, zc + .02, M.black, false);
-    box(w.x1, w.x2, top - .05, top, zc - .04, zc + .04, M.walnut);
+    const top = w.y1, ax = w.axis === 'x', c = ax ? (w.z1 + w.z2) / 2 : (w.x1 + w.x2) / 2, lo = ax ? w.x1 : w.z1, hi = ax ? w.x2 : w.z2;
+    const bb = (u1, u2, y0, y1, h) => ax ? box(u1, u2, y0, y1, c - h, c + h, y1 - y0 > .2 ? M.black : M.walnut, false) : box(c - h, c + h, y0, y1, u1, u2, y1 - y0 > .2 ? M.black : M.walnut, false);
+    for (let u = lo + .05; u < hi; u += .11) bb(u - .009, u + .009, w.y0, top - .05, .009);
+    ax ? box(lo, hi, w.y0, w.y0 + .04, c - .02, c + .02, M.black, false) : box(c - .02, c + .02, w.y0, w.y0 + .04, lo, hi, M.black, false);
+    ax ? box(lo, hi, top - .05, top, c - .04, c + .04, M.walnut) : box(c - .04, c + .04, top - .05, top, lo, hi, M.walnut);
     continue;
   }
   const alongX = w.axis === 'x', m = w.kind === 'int' || w.kind === 'guard' ? M.wallInt : M.render, lo = alongX ? w.x1 : w.z1, hi = alongX ? w.x2 : w.z2, y0 = w.y0, y1 = w.y1;
@@ -544,7 +548,8 @@ function furniture(f) {
       box(f.x1, f.x2, y0, y1, f.z1, f.z2, m);
       const along = W < D, n = Math.round((along ? D : W) / .45);
       for (let i = 1; i < n; i++) { const u = along ? f.z1 + D * i / n : f.x1 + W * i / n;
-        along ? box(f.x2, f.x2 + .004, y0 + .05, y1 - .05, u - .004, u + .004, M.black, false) : box(u - .004, u + .004, y0 + .05, y1 - .05, f.z2, f.z2 + .004, M.black, false); }
+        const fz = f.face === 'z1' ? f.z1 - .004 : f.z2, fx = f.face === 'x1' ? f.x1 - .004 : f.x2;
+        along ? box(fx, fx + .004, y0 + .05, y1 - .05, u - .004, u + .004, M.black, false) : box(u - .004, u + .004, y0 + .05, y1 - .05, fz, fz + .004, M.black, false); }
       return; }
     case 'frames': {
       for (const [a, b, c, d, mm] of [[0, .55, .3, .95, M.walnut], [.62, 1.0, .5, 1.0, M.black], [.62, 1.0, 0, .4, M.walnut], [1.08, 1.68, .25, .85, M.black], [1.75, 2.0, .4, .75, M.walnut]]) {
@@ -566,25 +571,15 @@ function furniture(f) {
 }
 P.furn.forEach(furniture);
 
-/* stair balustrades and handrails */
-{
-  const flights = {};
-  for (const d of P.decks.filter(d => d.kind === 'step')) { const f = d.id.match(/^s(\d)/); if (f) (flights[f[1]] = flights[f[1]] || []).push(d); }
-  const zIn = 4.815, zWall = 5.81;
-  for (const [f, steps] of Object.entries(flights)) {
-    steps.sort((a, b) => a.y - b.y);
-    const pts = [];
-    for (const d of steps) {
-      const isLanding = d.x2 - d.x1 > .5;
-      const xs = isLanding ? [d.x2 - .05, (d.x1 + d.x2) / 2, d.x1 + .05] : [(d.x1 + d.x2) / 2];
-      for (const x of xs) pts.push([x, d.y + .9]);
-      if (f !== '0') for (let x = d.x1 + .06; x < d.x2; x += .11) box(x - .009, x + .009, d.y, d.y + .86, zIn - .009, zIn + .009, M.black, false);
-    }
-    for (let i = 1; i < pts.length; i++) {
-      rod([pts[i - 1][0], pts[i - 1][1], zIn], [pts[i][0], pts[i][1], zIn], .025, M.walnut);
-      rod([pts[i - 1][0], pts[i - 1][1], zWall], [pts[i][0], pts[i][1], zWall], .02, M.walnut);
-    }
-    for (let i = 0; i < pts.length; i += 3) box(pts[i][0] - .01, pts[i][0] + .01, pts[i][1] - .02, pts[i][1], zWall + .02, 5.866, M.nickel, false);
+/* stair balustrades and handrails (geometry comes from the plan) */
+if (P.stair) {
+  for (const b of P.stair.balusters) {
+    for (let x = b.x1 + .055; x < b.x2 - .005; x += .11) box(x - .009, x + .009, b.y0, b.y1, b.z - .009, b.z + .009, M.black, false);
+    box(b.x1, b.x2, b.y0, b.y0 + .04, b.z - .02, b.z + .02, M.black, false);
+  }
+  for (const pts of P.stair.rails) for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], c = pts[i];
+    if (Math.hypot(c[0] - a[0], c[1] - a[1], c[2] - a[2]) > .005) rod([a[0], a[1], a[2]], [c[0], c[1], c[2]], .022, M.walnut);
   }
 }
 
@@ -619,7 +614,7 @@ for (const r of P.rooms) {
   if (r.lv < 1 && r.id !== 'passage' && r.id !== 'carbay') continue;
   const l = new THREE.PointLight(0xffc98a, 0, 5.5, 2); l.position.set((r.x1 + r.x2) / 2, r.y + (r.lv === 3 ? 2.4 : 2.7), (r.z1 + r.z2) / 2); scene.add(l); lamps.push(l);
 }
-for (const [x, y, z] of [[6.0, 2.7, 5.4], [6.0, 5.85, 5.4], [6.0, 9.0, 5.4], [4.5, 11.6, 5.4]]) { const l = new THREE.PointLight(0xffc98a, 0, 5, 2); l.position.set(x, y, z); scene.add(l); lamps.push(l); }
+for (const [x, y, z] of (P.stair ? P.stair.lamps : [])) { const l = new THREE.PointLight(0xffc98a, 0, 5, 2); l.position.set(x, y, z); scene.add(l); lamps.push(l); }
 
 root.traverse(o => { if (o.isMesh) o.material.clippingPlanes = clip; });
 
@@ -699,7 +694,7 @@ if (isTouch) {
   document.getElementById('helpKeys').innerHTML = '<dt>Left stick</dt><dd>Walk (stairs climb automatically)</dd><dt>Drag elsewhere</dt><dd>Look around</dd><dt>Next stop</dt><dd>Guided route through the house</dd><dt>Minimap</dt><dd>Tap a spot to jump there</dd>';
 }
 addEventListener('keydown', e => {
-  if (active !== 'walk' || /INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName || '')) return;
+  if (active !== 'walk' || cine || /INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName || '')) return;
   keys[e.code] = true;
   if (e.code === 'KeyV') setView(!overhead);
   if (e.code === 'KeyL') setTime(!evening);
@@ -773,7 +768,7 @@ function showRoom(r) {
   rcLevel.textContent = r && (r.id === 'stairs' || r.id === 'spiral') ? `Stairs · ${LEVEL_NAMES[lv]}` : (me.feet < 1 ? (r && r.lv === 0 ? LEVEL_NAMES[0] : 'Outside') : LEVEL_NAMES[lv]);
   rcName.textContent = r ? r.name : 'Outside';
   const outdoor = !r || ['road', 'front', 'sidepath', 'rear', 'stairs', 'spiral'].includes(r.id);
-  rcDims.textContent = r && !outdoor ? dimTxt(r.x2 - r.x1, r.z2 - r.z1) : r && r.id === 'stairs' ? 'Straight run on every floor · 1.0 m wide · 18 × 175 mm risers · 250 mm treads' : r && r.id === 'spiral' ? '1.8 m diameter · 16 × 197 mm risers per floor · 22.5° treads' : '';
+  rcDims.textContent = r && !outdoor ? dimTxt(r.x2 - r.x1, r.z2 - r.z1) : r && r.id === 'stairs' ? 'U-turn on every floor · 1.0 m flights · 17 × 185 mm risers · 250 mm treads' : r && r.id === 'spiral' ? '1.8 m diameter · 16 × 197 mm risers per floor · 22.5° treads' : '';
   const notes = r ? r.notes : [];
   rcNotes.innerHTML = notes.slice(0, expanded ? notes.length : 1).map(n => `<p>${n}</p>`).join('');
   rcMore.hidden = notes.length <= 1;
@@ -812,7 +807,7 @@ function drawMapBase(lv) {
   for (const f of P.furn.filter(f => f.lv === lv && f.solid !== false)) rectPx(g, f.x1, f.x2, f.z1, f.z2, false);
   for (const b of S) {
     const w = wallById[b.id] || wallById[b.id.replace(/-leaf$/, '')]; if (!w || !onLevel(lv, w)) continue;
-    g.fillStyle = w.kind === 'parapet' || w.kind === 'compound' || w.kind === 'rail' || w.kind === 'screen' ? css('--muted') : css('--ink');
+    g.fillStyle = w.kind === 'parapet' || w.kind === 'compound' || w.kind === 'rail' || w.kind === 'sguard' || w.kind === 'screen' ? css('--muted') : css('--ink');
     const [a, c2] = toPx(b.x1, b.z1); g.fillRect(a, c2, Math.max(1.5, (b.x2 - b.x1) * SC), Math.max(1.5, (b.z2 - b.z1) * SC));
   }
   return c;
@@ -838,13 +833,83 @@ mini.addEventListener('click', e => {
   hideHelp();
 });
 
+/* ---------------- cinematic tour: an automatic, smooth walk along a real route through every room ---------------- */
+const CI = P.cine;
+let cine = null;
+const cineCap = document.getElementById('cineCap'), cineName = document.getElementById('cineName'), cineLine = document.getElementById('cineLine');
+const cum = [0];
+if (CI) for (let i = 1; i < CI.pts.length; i++) { const a = CI.pts[i - 1], b = CI.pts[i]; cum.push(cum[i - 1] + Math.hypot(b[0] - a[0], b[2] - a[2], (b[1] - a[1]) * .6)); }
+function cineAt(d) {
+  const L = cum[cum.length - 1]; d = Math.max(0, Math.min(L, d));
+  let lo = 0, hi = cum.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (cum[m] <= d) lo = m; else hi = m; }
+  const a = CI.pts[lo], b = CI.pts[hi], t = cum[hi] > cum[lo] ? (d - cum[lo]) / (cum[hi] - cum[lo]) : 0;
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+}
+const angDiff = (a, b) => { let d = b - a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
+function cineCaption(r) {
+  if (!r) { cineCap.classList.remove('show'); return; }
+  cineName.textContent = r.name;
+  const n = (r.notes && r.notes[0]) || ''; cineLine.textContent = n.length > 150 ? n.slice(0, n.lastIndexOf(' ', 147)) + '…' : n;
+  cineCap.classList.remove('show'); void cineCap.offsetWidth; cineCap.classList.add('show');
+}
+function startCine() {
+  if (!CI) return;
+  if (document.pointerLockElement) document.exitPointerLock();
+  setView(false); hideHelp();
+  cine = { d: 0, next: 1, dwell: 2.5, pan: 0, yaw: -Math.PI / 2, pitch: 0.02, y: CI.pts[0][1] + EYE, saved: { exp: renderer.toneMappingExposure, fov: camera.fov, evening } };
+  setTime(false);
+  renderer.toneMappingExposure = 1.15; camera.fov = 56; camera.updateProjectionMatrix();
+  sun.intensity = 1.55; hemi.intensity = .62; amb.intensity = .12; lamps.forEach(l => l.intensity = .55);
+  document.body.classList.add('cine');
+  cineCaption(P.rooms.find(r => r.id === CI.stops[0].id));
+  document.getElementById('bCine').classList.add('on');
+}
+function stopCine() {
+  if (!cine) return;
+  const [x, y, z] = cineAt(cine.d), sv = cine.saved; cine = null;
+  renderer.toneMappingExposure = sv.exp; camera.fov = sv.fov; camera.updateProjectionMatrix(); setTime(sv.evening);
+  document.body.classList.remove('cine'); cineCap.classList.remove('show');
+  document.getElementById('bCine').classList.remove('on');
+  teleport(x, z, y, me.yaw); eyeY = null; curRoom = undefined;
+}
+function cineFrame(dt) {
+  const c = cine, L = cum[cum.length - 1], SPEED = 0.85;
+  const stopD = c.next < CI.stops.length ? cum[CI.stops[c.next].i] : L;
+  let stopRoom = null;
+  if (c.dwell > 0) { c.dwell -= dt; c.pan += dt; }
+  else {
+    c.d = Math.min(stopD, c.d + SPEED * dt);
+    if (c.d >= stopD - 1e-4) {
+      if (c.next >= CI.stops.length) { stopCine(); say('End of the tour'); return; }
+      stopRoom = P.rooms.find(r => r.id === CI.stops[c.next].id); c.next++; c.dwell = 3.6; c.pan = 0; cineCaption(stopRoom); c.room = stopRoom;
+    }
+  }
+  const p = cineAt(c.d), q = cineAt(c.d + 1.4);
+  let ty = Math.atan2(-(q[0] - p[0]), -(q[2] - p[2]));
+  let tp = Math.max(-.32, Math.min(.25, Math.atan2(q[1] - p[1], Math.hypot(q[0] - p[0], q[2] - p[2]) + .01) * .8)) - .04;
+  if (c.dwell > 0 && c.room) {               // pause in each room: slow look around towards its centre
+    const rx = (c.room.x1 + c.room.x2) / 2 - p[0], rz = (c.room.z1 + c.room.z2) / 2 - p[2];
+    if (Math.hypot(rx, rz) > .6 && c.room.id !== 'road') ty = Math.atan2(-rx, -rz);
+    ty += Math.sin(c.pan * .55) * .45; tp = -.05;
+  }
+  if (Math.hypot(q[0] - p[0], q[2] - p[2]) < .05 && c.dwell <= 0) ty = c.yaw;
+  c.yaw += angDiff(c.yaw, ty) * Math.min(1, dt * 1.6);
+  c.pitch += (tp - c.pitch) * Math.min(1, dt * 1.6);
+  c.y += (p[1] + EYE - c.y) * Math.min(1, dt * 5);
+  camera.position.set(p[0], c.y + Math.sin(c.d * 4.2) * .006, p[2]); camera.rotation.set(c.pitch, c.yaw, 0); clip[0].constant = 100;
+  me.x = p[0]; me.z = p[2]; me.feet = p[1]; me.yaw = c.yaw;
+}
+document.getElementById('bCine').addEventListener('click', () => cine ? stopCine() : startCine());
+addEventListener('keydown', e => { if (active !== 'walk') return; if (e.code === 'KeyC' && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName || '')) cine ? stopCine() : startCine(); else if (cine && e.code === 'Escape') stopCine(); });
+canvas.addEventListener('pointerdown', () => { if (cine) stopCine(); }, true);
+
 /* ---------------- loop ---------------- */
 function resize() { const w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
 new ResizeObserver(resize).observe(stage); resize();
 let last = performance.now();
 function frame(t) {
   const dt = Math.min(.05, (t - last) / 1000); last = t;
-  if (active === 'walk') { update(dt); placeCamera(dt); checkRoom(); drawMap(); renderer.render(scene, camera); }
+  if (active === 'walk') { if (cine) cineFrame(dt); else { update(dt); placeCamera(dt); } checkRoom(); drawMap(); renderer.render(scene, camera); }
   requestAnimationFrame(frame);
 }
 setView(false); setTime(false); reset(); curRoom = undefined;
